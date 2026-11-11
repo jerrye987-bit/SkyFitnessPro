@@ -65,7 +65,7 @@ const navigateToLogin = () => {
   grid-template-areas:
     'logo . btn'
     'sub . btn';
-  align-items: center;
+  align-items: start;
   column-gap: 16px;
 }
 
@@ -74,6 +74,7 @@ const navigateToLogin = () => {
   display: flex;
   align-items: center;
   gap: 8px;
+  padding-top: 6px;
 }
 
 .header__logo-icon {

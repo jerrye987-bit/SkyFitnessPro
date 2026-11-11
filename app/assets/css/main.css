@@ -12,6 +12,8 @@
 *,
 *::before,
 *::after {
+  margin: 0;
+  padding: 0;
   box-sizing: border-box;
 }
 
@@ -19,9 +21,9 @@ body {
   margin: 0;
   font-family: 'Roboto', sans-serif;
   font-size: 16px;
-  line-height: 1.4;
+  line-height: 1.1;
   color: var(--color-text);
-  background: var(--color-bg);
+  background-color: var(--color-bg);
 }
 
 h1, h2, h3, p {

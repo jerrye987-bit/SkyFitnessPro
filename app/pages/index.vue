@@ -1,12 +1,16 @@
 <script setup lang="ts">
 import { courses } from '~/data/courses'
+
+function scrollToTop() {
+  window.scrollTo({ top: 0, behavior: 'smooth' })
+}
 </script>
 
 <template>
   <main class="page">
     <section class="hero container">
       <h1 class="hero__title">
-        Начните заниматься спортом<br>
+        Начните заниматься спортом
         и улучшите качество жизни
       </h1>
       <div class="hero__note">
@@ -14,8 +18,19 @@ import { courses } from '~/data/courses'
       </div>
     </section>
 
-    <section class="courses">
-      <CourseCard v-for="course in courses" :key="course.id" :course="course" />
+    <section class="workouts container">
+        <WorkoutsCard
+        v-for="course in courses"
+        :key="course.id"
+        :course="course"
+        />
+    </section>
+
+    <section class="up container">
+        <button class="up__button" type="button" @click="scrollToTop">
+            Наверх
+            <span class="up__arrow">↑</span>
+        </button>
     </section>
   </main>
 </template>
@@ -26,7 +41,7 @@ import { courses } from '~/data/courses'
   grid-template-columns: 1fr auto;
   align-items: start;
   column-gap: 20px; 
-  padding: 10px 0 64px;
+  padding: 10px 0 50px;
 }
 
 .hero__title {
@@ -54,5 +69,39 @@ import { courses } from '~/data/courses'
   width: 30px;   
   height: 35px;
   background: url('/img/note-tail.svg') no-repeat center / contain;
+}
+
+.workouts {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 40px;
+  padding-bottom: 34px;
+}
+
+.up {
+  display: flex;
+  justify-content: center;
+  padding-bottom: 81px; 
+}
+
+.up__button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 16px 26px;
+  border: 1px solid var(--color-accent);
+  border-radius: 46px;
+  background: var(--color-accent);
+  color: var(--color-text);
+  font-family: 'Roboto';
+  font-size: 18px;
+  font-weight: 400;
+  line-height: 1.1;
+  cursor: pointer;
+}
+
+.up__arrow {
+  display: inline-block;
+  transform: translateY(-2px);
 }
 </style>
