@@ -1,0 +1,35 @@
+:root {
+  --color-accent: #BCEC30; 
+  --color-text: #000000;
+  --color-muted: rgba(0, 0, 0, 0.5);
+  --color-bg: #FAFAFA;
+  --color-card: #FFFFFF;
+  --radius-lg: 46px;
+  --radius-md: 30px;
+  --container: 1160px;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: 'Roboto', sans-serif;
+  font-size: 16px;
+  line-height: 1.4;
+  color: var(--color-text);
+  background: var(--color-bg);
+}
+
+h1, h2, h3, p {
+  margin: 0;
+}
+
+.container {
+  max-width: var(--container);
+  margin: 0 auto;
+  padding: 0; 
+}
