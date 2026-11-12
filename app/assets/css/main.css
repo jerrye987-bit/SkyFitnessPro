@@ -35,3 +35,9 @@ h1, h2, h3, p {
   margin: 0 auto;
   padding: 0; 
 }
+
+@media (max-width: 767px) {
+  .container {
+    padding: 0 16px; /* сверь с Inspect мобильного фрейма */
+  }
+}

@@ -112,8 +112,23 @@ defineProps<{ course: Course }>()
 }
 
 .card__tag-icon {
-  width: 15px;
-  height: 15px;
+  width: 18px;
+  height: 18px;
   display: block;
+}
+
+@media (max-width: 767px) {
+  .card__body {
+    padding: 24px 21.5px 15px;
+  }
+
+  .card__title {
+    font-size: 24px;
+    font-weight: 500;
+  }
+
+  .card__tag {
+    padding: 10px;
+  }
 }
 </style>

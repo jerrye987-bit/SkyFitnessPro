@@ -60,7 +60,6 @@ function scrollToTop() {
   position: relative;
 }
 
-/* хвостик */
 .hero__note::after {
   content: '';
   position: absolute;
@@ -103,5 +102,30 @@ function scrollToTop() {
 .up__arrow {
   display: inline-block;
   transform: translateY(-2px);
+}
+
+@media (max-width: 767px) {
+  .hero {
+    padding: 0 0 34px;
+  }
+
+  .hero__title {
+    font-size: 32px;
+    line-height: 1.1;
+  }
+
+    .hero__note {
+    display: none;
+  }
+
+  .workouts {
+    grid-template-columns: 1fr;
+    gap: 24px; 
+    padding: 0 0 24px;
+  }
+
+  .up {
+    justify-content: flex-end;
+  }
 }
 </style>

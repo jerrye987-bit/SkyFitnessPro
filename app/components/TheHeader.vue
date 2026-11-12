@@ -118,4 +118,23 @@ const navigateToLogin = () => {
 .header__btn:hover {
   background: #a8ef4f;
 }
+
+@media (max-width: 767px) {
+  .header {
+    padding: 40px 0;
+  }
+  .header__inner {
+    column-gap: 8px;
+  }
+
+  .header__subtitle {
+    display: none;
+  }
+
+  .header__btn {
+    padding: 8px 16px;
+    border: 1px solid var(--color-accent);
+    border-radius: 46px;
+  }
+}
 </style>
