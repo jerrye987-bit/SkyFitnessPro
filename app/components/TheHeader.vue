@@ -1,8 +1,5 @@
 <script setup lang="ts">
-const navigateToLogin = () => {
-  // пока заглушка — страница логина появится позже
-  navigateTo('/login')
-}
+const isModalOpen = ref(false)
 </script>
 
 <template>
@@ -46,9 +43,10 @@ const navigateToLogin = () => {
         </svg>
       </a>
       <p class="header__subtitle">Онлайн-тренировки для занятий дома</p>
-      <button class="header__btn" type="button" @click="navigateToLogin">
+      <button class="header__btn" type="button" @click="isModalOpen = true">
         Войти
       </button>
+      <ModalLogin v-if="isModalOpen" @close="isModalOpen = false" />
     </div>
   </header>
 </template>
