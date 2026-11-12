@@ -4,6 +4,45 @@ const emit = defineEmits(["close"]);
 function onOverlayClick(e) {
   if (e.target === e.currentTarget) emit("close");
 }
+
+const isRegister = ref(false);
+
+const login = ref('')
+const email = ref("");
+const password = ref('')
+const passwordRepeat = ref("");
+
+const isError = ref(false)
+
+watch([login, email, password, passwordRepeat], () => {
+  isError.value = false
+})
+
+function toggleMode() {
+  isRegister.value = !isRegister.value;
+  isError.value = false;
+}
+
+async function submit() {
+  if (isRegister.value && password.value !== passwordRepeat.value) {
+    isError.value = true;
+    return;
+  }
+
+  isError.value = false;
+
+  try {
+    if (isRegister.value) {
+      // запрос регистрации: email + password
+      // await registerUser(email.value, password.value)
+    } else {
+      // запрос входа: login + password
+      // await loginUser(login.value, password.value)
+    }
+  } catch {
+    isError.value = true;
+  }
+}
 </script>
 
 <template>
@@ -44,27 +83,57 @@ function onOverlayClick(e) {
         </svg>
       </div>
 
-      <form class="modal__form" @submit.prevent>
+      <form class="modal__form" @submit.prevent="submit">
         <div class="modal__group-input">
-            <input 
-                v-model="login"
-                class="modal__input" 
-                type="text" 
-                placeholder="Логин" 
+            <input
+            v-if="isRegister"
+            v-model="email"
+            class="modal__input"
+            type="email"
+            placeholder="Эл. почта"
             >
-            <input 
-                v-model="password"
-                class="modal__input" 
-                type="password" 
-                placeholder="Пароль" >
+            <input
+            v-else
+            v-model="login"
+            class="modal__input"
+            type="text"
+            placeholder="Логин"
+            >
+            <input
+            v-model="password"
+            class="modal__input"
+            type="password"
+            placeholder="Пароль"
+            :class="{ modal__input_error: isError }"
+            >
+            <input
+            v-if="isRegister"
+            v-model="passwordRepeat"
+            class="modal__input"
+            type="password"
+            placeholder="Повторите пароль"
+            >
+            <p v-if="isError" class="modal__error-text">
+            {{ isRegister
+                ? 'Пароли не совпадают, попробуйте еще раз.'
+                : 'Пароль введен неверно, попробуйте еще раз.' }}
+            </p>
         </div>
+
         <div class="modal__group-button">
-            <button class="modal__button" type="submit">Войти</button>
-            <button class="modal__button modal__button_secondary" type="button">
-                Зарегистрироваться
+            <button class="modal__button" type="submit">
+            {{ isRegister ? 'Зарегистрироваться' : 'Войти' }}
             </button>
-        </div>   
+            <button
+            class="modal__button modal__button_secondary"
+            type="button"
+            @click="toggleMode"
+            >
+            {{ isRegister ? 'Войти' : 'Зарегистрироваться' }}
+            </button>
+        </div>
       </form>
+
     </div>
   </div>
 </template>
@@ -172,6 +241,19 @@ function onOverlayClick(e) {
   border-color: #999999;
   color: #999999;
   cursor: not-allowed;
+}
+
+.modal__input_error {
+  border-color: #DB0030;
+}
+
+.modal__error-text {
+  margin: 0;
+  font-weight: 400;
+  font-size: 14px;
+  line-height: 1.1;
+  color: #DB0030;
+  text-align: center;
 }
 
 @media (max-width: 767px) {
