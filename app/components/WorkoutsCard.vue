@@ -1,39 +1,59 @@
 <script setup lang="ts">
 import type { Course } from '~/data/courses'
 
-defineProps<{ course: Course }>()
+const emit = defineEmits<{ addCourse: [courseId: string] }>()
+const props = defineProps<{ course: Course }>()
+
+function addCourse() {
+  emit('addCourse', props.course.id)
+}
 </script>
 
 <template>
   <article class="card">
-    <div class="card__media" :style="{ background: course.bg }">
-      <img :src="course.image" :alt="course.name" class="card__img">
-      <button class="card__plus" type="button" aria-label="Подробнее">
-        <img src="/img/plus.svg" alt="" class="card__plus-icon">
-      </button>
-    </div>
-    <div class="card__body">
-      <h2 class="card__title">{{ course.name }}</h2>
-      <ul class="card__tags">
-        <li class="card__tag">
+    <NuxtLink
+      :to="`/courses/${course.id}`"
+      class="card__link"
+      :aria-label="`Перейти к курсу ${course.name}`"
+    >
+      <div class="card__media" :style="{ background: course.bg }">
+        <img :src="course.image" :alt="course.name" class="card__img">
+      </div>
+      <div class="card__body">
+        <h2 class="card__title">{{ course.name }}</h2>
+        <ul class="card__tags">
+          <li class="card__tag">
             <img src="/img/day.svg" alt="" class="card__tag-icon">
             {{ course.duration }}
-        </li>
-        <li class="card__tag">
+          </li>
+          <li class="card__tag">
             <img src="/img/time.svg" alt="" class="card__tag-icon">
             {{ course.perDay }}
-        </li>
-        <li class="card__tag">
+          </li>
+          <li class="card__tag">
             <img src="/img/complexity.svg" alt="" class="card__tag-icon">
-            Сложность</li>
-      </ul>
-    </div>
+            Сложность
+          </li>
+        </ul>
+      </div>
+    </NuxtLink>
+
+    <button 
+      class="card__plus" 
+      type="button" 
+      aria-label="Добавить курс"
+      @click="addCourse"
+      >
+      <img src="/img/plus.svg" alt="" class="card__plus-icon">
+    </button>
   </article>
 </template>
 
 
+
 <style scoped>
 .card {
+  position: relative;
   background: #fff;
   border-radius: 30px;
   overflow: hidden;
@@ -41,6 +61,12 @@ defineProps<{ course: Course }>()
   flex-direction: column;
   box-shadow: 0px 4px 67px -12px #00000021;
 
+}
+
+.card__link {
+  display: block;
+  color: inherit;
+  text-decoration: none;
 }
 
 .card__media {
@@ -65,10 +91,11 @@ defineProps<{ course: Course }>()
   border: none;
   border-radius: 50%;
   background: transparent;
-  cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
+  z-index: 1;
+  cursor: pointer;
 }
 
 .card__plus-icon {

@@ -4,6 +4,10 @@ import { courses } from '~/data/courses'
 function scrollToTop() {
   window.scrollTo({ top: 0, behavior: 'smooth' })
 }
+
+function handleAddCourse(courseId: string) {
+  console.log('Добавляем курс:', courseId)
+}
 </script>
 
 <template>
@@ -23,6 +27,7 @@ function scrollToTop() {
         v-for="course in courses"
         :key="course.id"
         :course="course"
+        @add-course="handleAddCourse"
         />
     </section>
 
