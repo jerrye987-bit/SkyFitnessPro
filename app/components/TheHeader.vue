@@ -119,7 +119,7 @@ const isModalOpen = ref(false)
 
 @media (max-width: 767px) {
   .header {
-    padding: 40px 0;
+    padding: 39px 0;
   }
   .header__inner {
     column-gap: 8px;
