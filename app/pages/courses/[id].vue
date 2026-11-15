@@ -28,130 +28,134 @@ const advantages = [
 </script>
 
 <template>
-  <div class="course-page">
-    <section class="course-page__banner">
-      <h1 class="course-page__title">Йога</h1>
-    </section>
+  <div>
+    <TheHeader show-subtitle />
 
-    <section class="course-page__benefits">
-      <h2 class="course-page__subtitle">Подойдет для вас, если:</h2>
-      <ul class="benefits-list">
-        <li
-          v-for="(benefit, index) in benefits"
-          :key="benefit"
-          class="benefits-item"
-        >
-          <span class="benefits-item__number">{{ index + 1 }}</span>
-          <p class="benefits-item__text">{{ benefit }}</p>
-        </li>
-      </ul>
-    </section>
+    <div class="course-page">
+      <section class="course-page__banner">
+        <h1 class="course-page__title">Йога</h1>
+      </section>
 
-    <section class="course-page__directions">
-      <h2 class="course-page__subtitle">Направления</h2>
-      <div class="directions">
-        <p
-          v-for="direction in directions"
-          :key="direction"
-          class="directions__item"
-        >
+      <section class="course-page__benefits">
+        <h2 class="course-page__subtitle">Подойдет для вас, если:</h2>
+        <ul class="benefits-list">
+          <li
+            v-for="(benefit, index) in benefits"
+            :key="benefit"
+            class="benefits-item"
+          >
+            <span class="benefits-item__number">{{ index + 1 }}</span>
+            <p class="benefits-item__text">{{ benefit }}</p>
+          </li>
+        </ul>
+      </section>
+
+      <section class="course-page__directions">
+        <h2 class="course-page__subtitle">Направления</h2>
+        <div class="directions">
+          <p
+            v-for="direction in directions"
+            :key="direction"
+            class="directions__item"
+          >
+            <svg
+              class="directions__star"
+              width="20"
+              height="20"
+              viewBox="0 0 20 20"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M9.21373 1.11751C9.3702 0.454433 9.44843 0.122896 9.57424 0.0482295C9.68259 -0.0160765 9.81741 -0.0160765 9.92576 0.0482295C10.0516 0.122896 10.1298 0.454434 10.2863 1.11751L11.0497 4.35302C11.3337 5.55636 11.4757 6.15803 11.7843 6.64596C12.0571 7.07744 12.4226 7.44285 12.854 7.71574C13.342 8.02432 13.9436 8.1663 15.147 8.45025L18.3825 9.21373C19.0456 9.3702 19.3771 9.44843 19.4518 9.57424C19.5161 9.68259 19.5161 9.81741 19.4518 9.92576C19.3771 10.0516 19.0456 10.1298 18.3825 10.2863L15.147 11.0497C13.9436 11.3337 13.342 11.4757 12.854 11.7843C12.4226 12.0571 12.0571 12.4226 11.7843 12.854C11.4757 13.342 11.3337 13.9436 11.0497 15.147L10.2863 18.3825C10.1298 19.0456 10.0516 19.3771 9.92576 19.4518C9.81741 19.5161 9.68259 19.5161 9.57424 19.4518C9.44843 19.3771 9.3702 19.0456 9.21373 18.3825L8.45025 15.147C8.1663 13.9436 8.02432 13.342 7.71574 12.854C7.44285 12.4226 7.07744 12.0571 6.64596 11.7843C6.15803 11.4757 5.55636 11.3337 4.35301 11.0497L1.11751 10.2863C0.454433 10.1298 0.122896 10.0516 0.0482295 9.92576C-0.0160765 9.81741 -0.0160765 9.68259 0.0482295 9.57424C0.122896 9.44843 0.454434 9.3702 1.11751 9.21373L4.35302 8.45025C5.55636 8.1663 6.15803 8.02432 6.64596 7.71574C7.07744 7.44285 7.44285 7.07744 7.71574 6.64596C8.02432 6.15803 8.1663 5.55636 8.45025 4.35301L9.21373 1.11751Z"
+                fill="black"
+              />
+            </svg>
+            {{ direction }}
+          </p>
+        </div>
+      </section>
+
+      <div class="course-page__cta-wrap">
+        <div class="course-page__squiggle">
           <svg
-            class="directions__star"
-            width="20"
-            height="20"
-            viewBox="0 0 20 20"
+            class="course-page__squiggle-one"
+            width="54"
+            height="47"
+            viewBox="0 0 54 47"
             fill="none"
             xmlns="http://www.w3.org/2000/svg"
           >
             <path
-              d="M9.21373 1.11751C9.3702 0.454433 9.44843 0.122896 9.57424 0.0482295C9.68259 -0.0160765 9.81741 -0.0160765 9.92576 0.0482295C10.0516 0.122896 10.1298 0.454434 10.2863 1.11751L11.0497 4.35302C11.3337 5.55636 11.4757 6.15803 11.7843 6.64596C12.0571 7.07744 12.4226 7.44285 12.854 7.71574C13.342 8.02432 13.9436 8.1663 15.147 8.45025L18.3825 9.21373C19.0456 9.3702 19.3771 9.44843 19.4518 9.57424C19.5161 9.68259 19.5161 9.81741 19.4518 9.92576C19.3771 10.0516 19.0456 10.1298 18.3825 10.2863L15.147 11.0497C13.9436 11.3337 13.342 11.4757 12.854 11.7843C12.4226 12.0571 12.0571 12.4226 11.7843 12.854C11.4757 13.342 11.3337 13.9436 11.0497 15.147L10.2863 18.3825C10.1298 19.0456 10.0516 19.3771 9.92576 19.4518C9.81741 19.5161 9.68259 19.5161 9.57424 19.4518C9.44843 19.3771 9.3702 19.0456 9.21373 18.3825L8.45025 15.147C8.1663 13.9436 8.02432 13.342 7.71574 12.854C7.44285 12.4226 7.07744 12.0571 6.64596 11.7843C6.15803 11.4757 5.55636 11.3337 4.35301 11.0497L1.11751 10.2863C0.454433 10.1298 0.122896 10.0516 0.0482295 9.92576C-0.0160765 9.81741 -0.0160765 9.68259 0.0482295 9.57424C0.122896 9.44843 0.454434 9.3702 1.11751 9.21373L4.35302 8.45025C5.55636 8.1663 6.15803 8.02432 6.64596 7.71574C7.07744 7.44285 7.44285 7.07744 7.71574 6.64596C8.02432 6.15803 8.1663 5.55636 8.45025 4.35301L9.21373 1.11751Z"
-              fill="black"
+              d="M2.82886 45.2712C5.82886 36.7712 20.0289 16.3712 52.8289 2.77124"
+              stroke-width="6"
+              stroke="black"
             />
           </svg>
-          {{ direction }}
-        </p>
-      </div>
-    </section>
-
-    <div class="course-page__cta-wrap">
-      <div class="course-page__squiggle">
-        <svg
-          class="course-page__squiggle-one"
-          width="54"
-          height="47"
-          viewBox="0 0 54 47"
-          fill="none"
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          <path
-            d="M2.82886 45.2712C5.82886 36.7712 20.0289 16.3712 52.8289 2.77124"
-            stroke-width="6"
-            stroke="black"
-          />
-        </svg>
-        <svg
-          class="course-page__squiggle-two"
-          width="629"
-          height="424"
-          viewBox="0 0 629 424"
-          fill="none"
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          <path
-            d="M499.782 388.795C943.782 -230.705 47.9024 39.5475 24.1395 237.96C18.5256 284.834 82.2022 298.666 177.705 277.697C273.208 256.727 -131.258 411.113 54.5178 439.481"
-            stroke-width="10.1395"
-            stroke="#C6FF00"
-          />
-        </svg>
-        <svg
-          class="course-page__squiggle-one-mobyle"
-          width="37"
-          height="32"
-          viewBox="0 0 37 32"
-          fill="none"
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          <path
-            d="M2.82898 30.1059C4.75847 24.639 13.8914 11.5185 34.9871 2.77148"
-            stroke-width="6"
-            stroke="black"
-          />
-        </svg>
-        <svg
-          class="course-page__squiggle-two-mobyle"
-          width="375"
-          height="290"
-          viewBox="0 0 375 290"
-          fill="none"
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          <path
-            d="M306.773 251.868C592.337 -146.572 16.1411 27.2447 0.857648 154.856C-2.75302 185.004 38.2014 193.9 99.6254 180.413C161.049 166.926 -99.0882 266.222 20.3958 284.467"
-            stroke-width="10.1395"
-            stroke="#C6FF00"
-          />
-        </svg>
-      </div>
-      <img 
-        src="/img/athlete.png" 
-        alt="" 
-        class="course-page__cta-img" 
-      >
-      <img  
-        src="/img/athleteMobyle.png"
-        alt=""
-        class="course-page__cta-img-mobyle"
-      >
-
-      <section class="course-page__cta">
-        <div class="course-page__cta-info">
-          <h2 class="course-page__cta-subtitle">Начните путь к новому телу</h2>
-          <ul class="course-page__cta-list">
-            <li v-for="item in advantages" :key="item">{{ item }}</li>
-          </ul>
-          <button class="course-page__btn">Войдите, чтобы добавить курс</button>
+          <svg
+            class="course-page__squiggle-two"
+            width="629"
+            height="424"
+            viewBox="0 0 629 424"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M499.782 388.795C943.782 -230.705 47.9024 39.5475 24.1395 237.96C18.5256 284.834 82.2022 298.666 177.705 277.697C273.208 256.727 -131.258 411.113 54.5178 439.481"
+              stroke-width="10.1395"
+              stroke="#C6FF00"
+            />
+          </svg>
+          <svg
+            class="course-page__squiggle-one-mobyle"
+            width="37"
+            height="32"
+            viewBox="0 0 37 32"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M2.82898 30.1059C4.75847 24.639 13.8914 11.5185 34.9871 2.77148"
+              stroke-width="6"
+              stroke="black"
+            />
+          </svg>
+          <svg
+            class="course-page__squiggle-two-mobyle"
+            width="375"
+            height="290"
+            viewBox="0 0 375 290"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M306.773 251.868C592.337 -146.572 16.1411 27.2447 0.857648 154.856C-2.75302 185.004 38.2014 193.9 99.6254 180.413C161.049 166.926 -99.0882 266.222 20.3958 284.467"
+              stroke-width="10.1395"
+              stroke="#C6FF00"
+            />
+          </svg>
         </div>
-      </section>
+        <img 
+          src="/img/athlete.png" 
+          alt="" 
+          class="course-page__cta-img" 
+        >
+        <img  
+          src="/img/athleteMobyle.png"
+          alt=""
+          class="course-page__cta-img-mobyle"
+        >
+
+        <section class="course-page__cta">
+          <div class="course-page__cta-info">
+            <h2 class="course-page__cta-subtitle">Начните путь к новому телу</h2>
+            <ul class="course-page__cta-list">
+              <li v-for="item in advantages" :key="item">{{ item }}</li>
+            </ul>
+            <button class="course-page__btn">Войдите, чтобы добавить курс</button>
+          </div>
+        </section>
+      </div>
     </div>
   </div>
 </template>

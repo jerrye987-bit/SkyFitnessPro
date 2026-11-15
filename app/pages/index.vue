@@ -11,33 +11,37 @@ function handleAddCourse(courseId: string) {
 </script>
 
 <template>
-  <main class="page">
-    <section class="hero container">
-      <h1 class="hero__title">
-        Начните заниматься спортом
-        и улучшите качество жизни
-      </h1>
-      <div class="hero__note">
-        Измени своё<br>тело за полгода!
-      </div>
-    </section>
+  <div>
+    <TheHeader show-subtitle />
 
-    <section class="workouts container">
-        <WorkoutsCard
-        v-for="course in courses"
-        :key="course.id"
-        :course="course"
-        @add-course="handleAddCourse"
-        />
-    </section>
+    <main class="page">
+      <section class="hero container">
+        <h1 class="hero__title">
+          Начните заниматься спортом
+          и улучшите качество жизни
+        </h1>
+        <div class="hero__note">
+          Измени своё<br>тело за полгода!
+        </div>
+      </section>
 
-    <section class="up container">
-        <button class="up__button" type="button" @click="scrollToTop">
-            Наверх
-            <span class="up__arrow">↑</span>
-        </button>
-    </section>
-  </main>
+      <section class="workouts container">
+          <WorkoutsCard
+          v-for="course in courses"
+          :key="course.id"
+          :course="course"
+          @add-course="handleAddCourse"
+          />
+      </section>
+
+      <section class="up container">
+          <button class="up__button" type="button" @click="scrollToTop">
+              Наверх
+              <span class="up__arrow">↑</span>
+          </button>
+      </section>
+    </main>
+  </div>
 </template>
 
 <style scoped>

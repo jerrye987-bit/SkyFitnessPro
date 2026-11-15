@@ -1,5 +1,18 @@
 <script setup lang="ts">
-const isModalOpen = ref(false)
+defineProps<{ showSubtitle?: boolean }>();
+
+const isModalOpen = ref(false);
+const isDropdownOpen = ref(false);
+
+// Пока заглушка. Позже состояние авторизации приедет из стора/композабла
+const user = ref<{ name: string; email: string } | null>({
+  name: "Сергей",
+  email: "sergey.petrov96@mail.ru",
+});
+
+function toggleDropdown() {
+  isDropdownOpen.value = !isDropdownOpen.value;
+}
 </script>
 
 <template>
@@ -42,10 +55,51 @@ const isModalOpen = ref(false)
           <path d="M175.818 21.56C179.906 21.56 182.958 18.564 182.958 14.28C182.958 9.996 179.906 7 175.818 7C171.73 7 168.678 9.996 168.678 14.28C168.678 18.564 171.73 21.56 175.818 21.56ZM175.818 18.48C173.662 18.48 172.038 16.8 172.038 14.28C172.038 11.76 173.662 10.08 175.818 10.08C177.974 10.08 179.598 11.76 179.598 14.28C179.598 16.8 177.974 18.48 175.818 18.48Z" fill="black"/>
         </svg>
       </a>
-      <p class="header__subtitle">Онлайн-тренировки для занятий дома</p>
-      <button class="header__btn" type="button" @click="isModalOpen = true">
+      <p v-if="showSubtitle" class="header__subtitle">Онлайн-тренировки для занятий дома</p>
+
+      <!-- НЕ залогинен: кнопка Войти -->
+      <button
+        v-if="!user" 
+        class="header__btn" 
+        type="button" 
+        @click="isModalOpen = true"
+      >
         Войти
       </button>
+
+      <!-- Залогинен: имя + стрелка + дропдаун -->
+      <div v-else class="header__user">
+        <button
+          class="header__user-btn"
+          type="button"
+          @click="toggleDropdown"
+        >
+          <img src="/img/avatarIcon.svg" alt="" class="header__user-avatar" >
+          <span class="header__user-name">{{ user.name }}</span>
+          <svg
+            class="header__user-arrow"
+            :class="{ 'header__user-arrow--open': isDropdownOpen }"
+            width="10"
+            height="6"
+            viewBox="0 0 10 6"
+            fill="none"
+          >
+            <path d="M1 1l4 4 4-4" stroke="black" stroke-width="1.5" />
+          </svg>
+        </button>
+
+        <div v-show="isDropdownOpen" class="header__dropdown">
+          <p class="header__dropdown-name">{{ user.name }}</p>
+          <p class="header__dropdown-email">{{ user.email }}</p>
+          <NuxtLink v-slot="{ navigate }" to="/profile" custom >
+            <button class="header__dropdown-profile" type="button" @click="navigate">
+              Мой профиль
+            </button>
+          </NuxtLink>
+          <button class="header__dropdown-logout">Выйти</button>
+        </div>
+      </div>
+
       <ModalLogin v-if="isModalOpen" @close="isModalOpen = false" />
     </div>
   </header>
@@ -63,7 +117,6 @@ const isModalOpen = ref(false)
   grid-template-areas:
     'logo . btn'
     'sub . btn';
-  align-items: start;
   column-gap: 16px;
 }
 
@@ -117,12 +170,101 @@ const isModalOpen = ref(false)
   background: #a8ef4f;
 }
 
+.header__user {
+  position: relative;
+  justify-self: end;
+}
+
+.header__user-btn {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  font-size: 24px;
+  line-height: 1.1;
+  color: var(--color-text);
+  cursor: pointer;
+}
+
+.header__user-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+}
+
+.header__user-arrow {
+  transition: transform 0.2s;
+}
+
+.header__user-arrow--open {
+  transform: rotate(180deg);
+}
+
+.header__dropdown {
+  position: absolute;
+  top: calc(100% + 16px);
+  right: 0;
+  z-index: 10;
+  width: 266px;
+  padding: 30px;
+  border-radius: 30px;
+  background: #fff;
+  box-shadow: 0 4px 40px rgba(0, 0, 0, 0.12);
+  text-align: center;
+}
+
+.header__dropdown-name {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 400;
+  line-height: 1.1;
+  color: var(--color-text);
+}
+
+.header__dropdown-email {
+  margin: 10px 0 34px;
+  font-size: 18px;
+  line-height: 1.1;
+  color: #999999;
+}
+
+.header__dropdown-profile {
+  width: 100%;
+  padding: 16px;
+  margin-bottom: 10px;
+  border: none;
+  border-radius: 46px;
+  background: var(--color-accent);
+  cursor: pointer;
+  font-size: 18px;
+  font-weight: 400;
+  line-height: 1.1;
+  color: var(--color-text);
+}
+
+.header__dropdown-logout {
+  width: 100%;
+  padding: 15px;
+  border: 1px solid var(--color-text);
+  border-radius: 46px;
+  background: transparent;
+  cursor: pointer;
+  font-size: 18px;
+  font-weight: 400;
+  line-height: 1.1;
+  color: var(--color-text);
+}
+
+
 @media (max-width: 767px) {
   .header {
     padding: 39px 0;
   }
   .header__inner {
     column-gap: 8px;
+    padding: 0;
   }
 
   .header__subtitle {
@@ -133,6 +275,15 @@ const isModalOpen = ref(false)
     padding: 8px 16px;
     border: 1px solid var(--color-accent);
     border-radius: 46px;
+  }
+
+  .header__user-name {
+    display: none;
+  }
+
+  .header__user-avatar {
+    height: 30px;
+    width: 30px;
   }
 }
 </style>

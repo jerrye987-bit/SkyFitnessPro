@@ -10,8 +10,8 @@ export interface Course {
 
 export const courses: Course[] = [
   { id: 'yoga', name: 'Йога', image: '/img/yoga.png', bg: '#FFC700', duration: '25 дней', perDay: '20-50 мин/день', complexity: 2 },
-  { id: 'stretch', name: 'Стретчинг', image: '/img/stretch.png', bg: '#1D9BF0', duration: '25 дней', perDay: '20-50 мин/день', complexity: 2 },
-  { id: 'fitness', name: 'Фитнес', image: '/img/fitness.png', bg: '#FF9500', duration: '25 дней', perDay: '20-50 мин/день', complexity: 3 },
-  { id: 'step', name: 'Степ-аэробика', image: '/img/step.png', bg: '#FF6B6B', duration: '25 дней', perDay: '20-50 мин/день', complexity: 3 },
-  { id: 'bodyflex', name: 'Бодифлекс', image: '/img/bodyflex.png', bg: '#8E3FFC', duration: '25 дней', perDay: '20-50 мин/день', complexity: 2 },
+  { id: 'stretch', name: 'Стретчинг', image: '/img/stretch.png', bg: '#2491D2', duration: '25 дней', perDay: '20-50 мин/день', complexity: 2 },
+  { id: 'fitness', name: 'Фитнес', image: '/img/fitness.png', bg: '#F7A012', duration: '25 дней', perDay: '20-50 мин/день', complexity: 3 },
+  { id: 'step', name: 'Степ-аэробика', image: '/img/step.png', bg: '#FF7E65', duration: '25 дней', perDay: '20-50 мин/день', complexity: 3 },
+  { id: 'bodyflex', name: 'Бодифлекс', image: '/img/bodyflex.png', bg: '#7D458C', duration: '25 дней', perDay: '20-50 мин/день', complexity: 2 },
 ]
