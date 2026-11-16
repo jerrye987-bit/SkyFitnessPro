@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { Course } from "~/data/courses";
-import { courses } from "~/data/courses";
+import { courses, getCurrentTrainingId } from "~/data/courses";
 
 // позже здесь будет профиль и курсы из API
 // const user = useProfile()
@@ -36,6 +36,50 @@ function buttonLabel(progress: number) {
 function scrollToTop() {
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
+
+const isModalOpen = ref(false);
+const activeCourse = ref<Course | null>(null);
+
+const isDesktop = ref(true);
+let desktopQuery: MediaQueryList | null = null;
+
+function onQueryChange(event: MediaQueryListEvent) {
+  isDesktop.value = event.matches;
+}
+
+onMounted(() => {
+  desktopQuery = window.matchMedia("(min-width: 768px)");
+  isDesktop.value = desktopQuery.matches;
+  desktopQuery.addEventListener("change", onQueryChange);
+});
+
+onUnmounted(() => {
+  desktopQuery?.removeEventListener("change", onQueryChange);
+});
+
+function openWorkouts(course: Course & { progress: number }) {
+  if (!isDesktop.value) {
+    const currentId = getCurrentTrainingId(course);
+    if (currentId) {
+      navigateTo(`/course/${course.id}/workout/${currentId}`);
+    }
+    return;
+  }
+  activeCourse.value = course;
+  isModalOpen.value = true;
+}
+
+function startTraining(trainingId: string) {
+  isModalOpen.value = false;
+  navigateTo(`/course/${activeCourse.value?.id}/workout/${trainingId}`);
+}
+
+function removeCourse(course: Course & { progress: number }) {
+  myCoursesFull.splice(
+    myCoursesFull.findIndex((c) => c.id === course.id),
+    1,
+  );
+}
 </script>
 
 <template>
@@ -64,7 +108,8 @@ function scrollToTop() {
                 <li 
                     v-for="course in myCoursesFull" 
                     :key="course.id" 
-                    class="course-card">
+                    class="course-card"
+                  >
                 <!-- цветная часть с фото -->
                 <div
                     class="course-card__image"
@@ -73,7 +118,11 @@ function scrollToTop() {
                         backgroundImage: `url(${course.image})`,
                     }"
                 >
-                    <button class="course-card__remove" aria-label="Удалить курс">
+                    <button 
+                      class="course-card__remove"  
+                      aria-label="Удалить курс"
+                      @click.stop="removeCourse(course)"
+                    >
                     <svg width="27" height="27" viewBox="0 0 27 27" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <path d="M13.3333 26.6667C20.6971 26.6667 26.6667 20.6971 26.6667 13.3333C26.6667 5.96954 20.6971 0 13.3333 0C5.96954 0 0 5.96954 0 13.3333C0 20.6971 5.96954 26.6667 13.3333 26.6667ZM6.66667 12V14.6667H20V12H6.66667Z" fill-rule="evenodd" clip-rule="evenodd" fill="white"/>
                     </svg>
@@ -117,7 +166,11 @@ function scrollToTop() {
                     />
                     </div>
 
-                    <button class="course-card__btn">
+                    <button 
+                      class="course-card__btn"
+                      type="button"
+                      @click="openWorkouts(course)"
+                      >
                     {{ buttonLabel(course.progress) }}
                     </button>
                 </div>
@@ -129,6 +182,14 @@ function scrollToTop() {
         <button class="up-btn" type="button" @click="scrollToTop">
             Наверх&nbsp;↑
         </button>
+
+        <ModalSelectWorkout
+          v-if="isModalOpen && activeCourse"
+          :trainings="activeCourse.trainings"
+          @close="isModalOpen = false"
+          @start="startTraining"
+        />
+
     </div>
 </template>
 
@@ -303,6 +364,12 @@ function scrollToTop() {
 .course-card__btn:hover {
   background: #a8ef4f;
 }
+
+.course-card__btn:focus-visible {
+  outline: 1px solid var(--color-accent);
+  outline-offset: 1px;
+}
+
 
 .up-btn {
   display: none;
