@@ -61,7 +61,7 @@ function openWorkouts(course: Course & { progress: number }) {
   if (!isDesktop.value) {
     const currentId = getCurrentTrainingId(course);
     if (currentId) {
-      navigateTo(`/course/${course.id}/workout/${currentId}`);
+      navigateTo(`/courses/${course.id}/workout/${currentId}`);
     }
     return;
   }
@@ -71,7 +71,7 @@ function openWorkouts(course: Course & { progress: number }) {
 
 function startTraining(trainingId: string) {
   isModalOpen.value = false;
-  navigateTo(`/course/${activeCourse.value?.id}/workout/${trainingId}`);
+  navigateTo(`/courses/${activeCourse.value?.id}/workout/${trainingId}`);
 }
 
 function removeCourse(course: Course & { progress: number }) {
