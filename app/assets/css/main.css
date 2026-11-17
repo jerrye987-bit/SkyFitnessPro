@@ -1,0 +1,43 @@
+:root {
+  --color-accent: #BCEC30; 
+  --color-text: #000000;
+  --color-muted: rgba(0, 0, 0, 0.5);
+  --color-bg: #FAFAFA;
+  --color-card: #FFFFFF;
+  --radius-lg: 46px;
+  --radius-md: 30px;
+  --container: 1160px;
+}
+
+*,
+*::before,
+*::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: 'Roboto', sans-serif;
+  font-size: 16px;
+  line-height: 1.1;
+  color: var(--color-text);
+  background-color: var(--color-bg);
+}
+
+h1, h2, h3, p {
+  margin: 0;
+}
+
+.container {
+  max-width: var(--container);
+  margin: 0 auto;
+  padding: 0; 
+}
+
+@media (max-width: 767px) {
+  .container {
+    padding: 0 16px; /* сверь с Inspect мобильного фрейма */
+  }
+}
