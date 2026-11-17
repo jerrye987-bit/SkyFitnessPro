@@ -2,36 +2,60 @@
 import type { Course } from "~/data/courses";
 import { courses } from "~/data/courses";
 
-// позже здесь будет профиль и курсы из API
-// const user = useProfile()
+definePageMeta({
+  middleware: "auth",
+});
 
-const user = {
-  name: "Сергей",
-  login: "sergey.petrov96",
-};
+const { fetchMe, logout } = useAuth();
 
-// Что пользователь взял и насколько продвинулся.
-// Позже это приедет из API вместе с профилем.
-const myCourses: { id: string; progress: number }[] = [
-  { id: "yoga", progress: 40 },
-  { id: "stretch", progress: 0 },
-  { id: "fitness", progress: 100 },
-];
+onMounted(async () => {
+  try {
+    user.value = await fetchMe();
+  } catch {
+    logout();
+    navigateTo("/");
+  }
+});
 
-// Склеиваем: данные курса + личный прогресс
-const myCoursesFull = myCourses
-  .map((my) => {
-    const course = courses.find((c) => c.id === my.id);
-    if (!course) return null;
-    return { ...course, progress: my.progress };
-  })
-  .filter((c): c is Course & { progress: number } => c !== null);
+function onLogout() {
+  logout();
+  navigateTo("/");
+}
+
+type CourseProgress = { id: string; progress?: number; total?: number };
+
+const user = ref<{
+  email: string;
+  selectedCourses: string[];
+  courseProgress: CourseProgress[];
+} | null>(null);
 
 function buttonLabel(progress: number) {
   if (progress === 0) return "Начать тренировки";
   if (progress === 100) return "Начать заново";
   return "Продолжить";
 }
+
+// Склеиваем: данные курса + личный прогресс
+const myCoursesFull = computed(() => {
+  if (!user.value) return [];
+
+  return user.value.selectedCourses
+    .map((id) => {
+      const course = courses.find((c) => c.id === id);
+      if (!course) return null;
+
+      // прогресс берём из courseProgress, если сервер его прислал
+      const progressInfo = user.value!.courseProgress.find((p) => p.id === id);
+      const progress = progressInfo?.progress
+        ? Math.round((progressInfo.progress / (progressInfo.total || 1)) * 100)
+        : 0;
+
+      return { ...course, progress };
+    })
+    .filter((c): c is Course & { progress: number } => c !== null);
+});
+
 
 function scrollToTop() {
   window.scrollTo({ top: 0, behavior: "smooth" });
@@ -54,9 +78,11 @@ function startTraining(trainingId: string) {
 }
 
 function removeCourse(course: Course & { progress: number }) {
-  const index = myCoursesFull.findIndex((c) => c.id === course.id);
+  if (!user.value) return;
+
+  const index = user.value.selectedCourses.indexOf(course.id);
   if (index !== -1) {
-    myCoursesFull.splice(index, 1);
+    user.value.selectedCourses.splice(index, 1);
   }
 }
 </script>
@@ -69,15 +95,15 @@ function removeCourse(course: Course & { progress: number }) {
             <h1 class="profile-page__title">Профиль</h1>
 
             <!-- карточка профиля -->
-            <section class="profile-card">
-            <div class="profile-card__avatar">
-                <img src="/img/avatar.svg" alt="" class="profile-card__avatar-img" >
-            </div>
-            <div class="profile-card__info">
-                <h2 class="profile-card__name">{{ user.name }}</h2>
-                <p class="profile-card__login">Логин: {{ user.login }}</p>
-                <button class="profile-card__btn">Выйти</button>
-            </div>
+            <section v-if="user" class="profile-card">
+              <div class="profile-card__avatar">
+                  <img src="/img/avatar.svg" alt="" class="profile-card__avatar-img" >
+              </div>
+              <div class="profile-card__info">
+                  <h2 class="profile-card__name">{{ user.email.split("@")[0] }}</h2>
+                  <p class="profile-card__login">{{ user.email }}</p>
+                  <button class="profile-card__btn" type="button" @click="onLogout">Выйти</button>
+              </div>
             </section>
 
             <!-- мои курсы -->

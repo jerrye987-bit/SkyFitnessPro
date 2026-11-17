@@ -4,14 +4,44 @@ defineProps<{ showSubtitle?: boolean }>();
 const isModalOpen = ref(false);
 const isDropdownOpen = ref(false);
 
-// Пока заглушка. Позже состояние авторизации приедет из стора/композабла
-const user = ref<{ name: string; email: string } | null>({
-  name: "Сергей",
-  email: "sergey.petrov96@mail.ru",
+const { fetchMe, logout } = useAuth();
+
+const user = ref<{ name: string; email: string } | null>(null);
+
+function toUser(me: { email: string; selectedCourses: string[] }) {
+  const [name] = me.email.split("@");
+  return { name: name ?? me.email, email: me.email };
+}
+
+onMounted(async () => {
+  const token = useCookie<string | null>("fitnessToken").value;
+  if (!token) return;
+
+  try {
+    user.value = toUser(await fetchMe());
+  } catch {
+    logout();
+  }
 });
 
 function toggleDropdown() {
   isDropdownOpen.value = !isDropdownOpen.value;
+}
+
+function onLogout() {
+  isDropdownOpen.value = false;
+  logout();
+  user.value = null;
+  navigateTo("/");
+}
+
+function onLoginSuccess() {
+  isModalOpen.value = false;
+  fetchMe()
+    .then((me) => {
+      user.value = toUser(me);
+    })
+    .catch((e) => console.error("onLoginSuccess: fetchMe упал", e));
 }
 </script>
 
@@ -96,11 +126,11 @@ function toggleDropdown() {
               Мой профиль
             </button>
           </NuxtLink>
-          <button class="header__dropdown-logout">Выйти</button>
+          <button class="header__dropdown-logout" type="button" @click="onLogout">Выйти</button>
         </div>
       </div>
 
-      <ModalLogin v-if="isModalOpen" @close="isModalOpen = false" />
+      <ModalLogin v-if="isModalOpen" @close="isModalOpen = false" @success="onLoginSuccess" />
     </div>
   </header>
 </template>
@@ -155,12 +185,13 @@ function toggleDropdown() {
   grid-area: btn;
   padding: 16px 26px;
   border: none;
-  border-radius: 32px;
+  border-radius: 46px;
   background: var(--color-accent);
   font-size: 18px;
   font-weight: 400;
   font-family: 'Roboto';
   line-height: 1.1;
+  letter-spacing: 0;
   color: var(--color-text);
   cursor: pointer;
   transition: background 0.2s;
