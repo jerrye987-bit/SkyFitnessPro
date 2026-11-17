@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { Course } from "~/data/courses";
-import { courses, getCurrentTrainingId } from "~/data/courses";
+import { courses } from "~/data/courses";
 
 // позже здесь будет профиль и курсы из API
 // const user = useProfile()
@@ -40,45 +40,24 @@ function scrollToTop() {
 const isModalOpen = ref(false);
 const activeCourse = ref<Course | null>(null);
 
-const isDesktop = ref(true);
-let desktopQuery: MediaQueryList | null = null;
-
-function onQueryChange(event: MediaQueryListEvent) {
-  isDesktop.value = event.matches;
-}
-
-onMounted(() => {
-  desktopQuery = window.matchMedia("(min-width: 768px)");
-  isDesktop.value = desktopQuery.matches;
-  desktopQuery.addEventListener("change", onQueryChange);
-});
-
-onUnmounted(() => {
-  desktopQuery?.removeEventListener("change", onQueryChange);
-});
-
 function openWorkouts(course: Course & { progress: number }) {
-  if (!isDesktop.value) {
-    const currentId = getCurrentTrainingId(course);
-    if (currentId) {
-      navigateTo(`/courses/${course.id}/workout/${currentId}`);
-    }
-    return;
-  }
   activeCourse.value = course;
   isModalOpen.value = true;
 }
 
 function startTraining(trainingId: string) {
   isModalOpen.value = false;
-  navigateTo(`/courses/${activeCourse.value?.id}/workout/${trainingId}`);
+  // Защита на случай, если activeCourse.value вдруг null
+  if (activeCourse.value?.id) {
+    navigateTo(`/courses/${activeCourse.value.id}/workout/${trainingId}`);
+  }
 }
 
 function removeCourse(course: Course & { progress: number }) {
-  myCoursesFull.splice(
-    myCoursesFull.findIndex((c) => c.id === course.id),
-    1,
-  );
+  const index = myCoursesFull.findIndex((c) => c.id === course.id);
+  if (index !== -1) {
+    myCoursesFull.splice(index, 1);
+  }
 }
 </script>
 

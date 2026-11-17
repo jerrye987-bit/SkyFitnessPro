@@ -91,7 +91,7 @@ onUnmounted(() => {
 <style scoped>
 .modal-overlay {
   position: fixed;
-  inset: 0; /* top/right/bottom/left: 0 — на весь экран */
+  inset: 0;
   z-index: 50;
   display: flex;
   align-items: center;
@@ -103,7 +103,6 @@ onUnmounted(() => {
   display: flex;
   flex-direction: column;
   width: 460px;
-  max-height: 50vh;
   padding: 40px;
   border-radius: 30px;
   background: #fff;
@@ -121,6 +120,7 @@ onUnmounted(() => {
 .select-workout__list {
   list-style: none;
   overflow-y: auto;
+  max-height: 30vh;
 }
 
 .select-workout__row {
@@ -160,7 +160,7 @@ onUnmounted(() => {
 
 .select-workout__start {
   margin-top: 34px;
-  padding: 16px;
+  padding: 16px 26px;
   border: none;
   border-radius: 46px;
   background: var(--color-accent);
@@ -214,5 +214,38 @@ onUnmounted(() => {
   background: var(--color-text);
   transform: translate(-50%, -50%);
 }
+
+@media (max-width: 767px) {
+  .modal-overlay {
+    padding: 16px;
+  }
+
+  .select-workout {
+    width: 100%;
+    padding: 30px;
+  }
+
+  .select-workout__list {
+    max-height: 33vh;
+  }
+
+  .select-workout__title {
+    font-size: 32px;
+    padding-bottom: 34px;
+  }
+
+  .select-workout__name {
+    font-size: 18px;
+  }
+
+  .select-workout__subtitle {
+    font-size: 14px;
+  }
+
+  .select-workout__start {
+    width: 100%;
+  }
+}
+
 
 </style>
