@@ -4,21 +4,18 @@ defineProps<{ showSubtitle?: boolean }>();
 const isModalOpen = ref(false);
 const isDropdownOpen = ref(false);
 
-const { fetchMe, logout } = useAuth();
+const { user, isLoggedIn, fetchMe, logout } = useAuth();
 
-const user = ref<{ name: string; email: string } | null>(null);
-
-function toUser(me: { email: string; selectedCourses: string[] }) {
-  const [name] = me.email.split("@");
-  return { name: name ?? me.email, email: me.email };
+function userName(me: { email: string }) {
+  return me.email.split("@")[0] ?? me.email;
 }
 
 onMounted(async () => {
   const token = useCookie<string | null>("fitnessToken").value;
-  if (!token) return;
+  if (!token || user.value) return;
 
   try {
-    user.value = toUser(await fetchMe());
+    await fetchMe();
   } catch {
     logout();
   }
@@ -33,15 +30,6 @@ function onLogout() {
   logout();
   user.value = null;
   navigateTo("/");
-}
-
-function onLoginSuccess() {
-  isModalOpen.value = false;
-  fetchMe()
-    .then((me) => {
-      user.value = toUser(me);
-    })
-    .catch((e) => console.error("onLoginSuccess: fetchMe упал", e));
 }
 </script>
 
@@ -89,7 +77,7 @@ function onLoginSuccess() {
 
       <!-- НЕ залогинен: кнопка Войти -->
       <button
-        v-if="!user" 
+        v-if="!isLoggedIn" 
         class="header__btn" 
         type="button" 
         @click="isModalOpen = true"
@@ -105,7 +93,7 @@ function onLoginSuccess() {
           @click="toggleDropdown"
         >
           <img src="/img/avatarIcon.svg" alt="" class="header__user-avatar" >
-          <span class="header__user-name">{{ user.name }}</span>
+          <span class="header__user-name">{{ user && userName(user) }}</span>
           <svg
             class="header__user-arrow"
             :class="{ 'header__user-arrow--open': isDropdownOpen }"
@@ -119,8 +107,8 @@ function onLoginSuccess() {
         </button>
 
         <div v-show="isDropdownOpen" class="header__dropdown">
-          <p class="header__dropdown-name">{{ user.name }}</p>
-          <p class="header__dropdown-email">{{ user.email }}</p>
+          <p class="header__dropdown-name">{{ user && userName(user) }}</p>
+          <p class="header__dropdown-email">{{ user?.email }}</p>
           <NuxtLink v-slot="{ navigate }" to="/profile" custom >
             <button class="header__dropdown-profile" type="button" @click="navigate">
               Мой профиль
@@ -130,7 +118,7 @@ function onLoginSuccess() {
         </div>
       </div>
 
-      <ModalLogin v-if="isModalOpen" @close="isModalOpen = false" @success="onLoginSuccess" />
+      <ModalLogin v-if="isModalOpen" @close="isModalOpen = false" />
     </div>
   </header>
 </template>

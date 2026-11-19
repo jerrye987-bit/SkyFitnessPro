@@ -1,5 +1,5 @@
 <script setup lang="ts">
-const emit = defineEmits(["close", "success"]);
+const emit = defineEmits(["close"]);
 
 const { login, register } = useAuth();
 
@@ -55,7 +55,6 @@ const syncFromDom = () => {
 async function submit() {
   errorText.value = "";
 
-  // читаем из DOM — автозаполнение точно дошло туда
   const emailValue = (emailInput.value?.value ?? email.value)
     .trim()
     .replace(/\u00A0|\u200B/g, "");
@@ -92,7 +91,7 @@ async function submit() {
 
   try {
     await login(emailValue, passwordValue);
-    emit("success");
+    emit("close");
   } catch (e) {
     isError.value = true;
     errorText.value = getErrorMessage(e);

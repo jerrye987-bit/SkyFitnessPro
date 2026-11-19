@@ -1,14 +1,14 @@
 <script setup lang="ts">
-import type { Exercise } from "~/data/courses";
+type ModalExercise = { name: string; quantity: number; current: number };
 
-const props = defineProps<{ exercises: Exercise[] }>();
+const props = defineProps<{ exercises: ModalExercise[] }>();
 const emit = defineEmits<{
   close: [];
-  save: [exercises: Exercise[]];
+  save: [{ name: string; progress: number }[]];
 }>();
 
-// уникальные упражнения — один вопрос на название, без дублей подходов
-const draft = ref(props.exercises.map((e) => ({ ...e, reps: e.reps ?? 0 })));
+// локальная копия: user вводит сделанные повторения, current — уже сохранённые
+const draft = ref(props.exercises.map((e) => ({ ...e, reps: e.current })));
 
 function onKeydown(event: KeyboardEvent) {
   if (event.key === "Escape") emit("close");
@@ -22,9 +22,8 @@ function submit() {
   const updated = props.exercises.map((e, i) => {
     const reps = Math.max(0, draft.value[i]?.reps ?? 0);
     return {
-      ...e,
-      reps,
-      progress: Math.min(100, Math.round((reps / e.target) * 100)),
+      name: e.name,
+      progress: Math.min(100, Math.round((reps / (e.quantity || 1)) * 100)),
     };
   });
   emit("save", updated);

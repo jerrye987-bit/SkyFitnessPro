@@ -1,22 +1,73 @@
-<script setup>
-// позже здесь будет загрузка курса из API по id из роута
-// const route = useRoute()
-// const course = useCourse(route.params.id)
+<script setup lang="ts">
+import type { CourseFull, CourseUser } from "~/types/course";
 
-const benefits = [
-  "Давно хотели попробовать йогу, но не решались начать",
-  "Хотите укрепить позвоночник, избавиться от болей в спине и суставах",
-  "Ищете активность, полезную для тела и души",
-];
+const route = useRoute();
+const { fetchCourse, addCourse } = useCourses();
+const { fetchMe } = useAuth();
 
-const directions = [
-  "Йога для новичков",
-  "Кундалини-йога",
-  "Хатха-йога",
-  "Классическая йога",
-  "Йогатерапия",
-  "Аштанга-йога",
-];
+const course = ref<CourseFull | null>(null);
+const user = ref<CourseUser | null>(null);
+
+const isModalOpen = ref(false);
+const isPending = ref(false);
+const isAdded = ref(false);
+const isLoading = ref(true);
+const message = ref("");
+const errorText = ref("");
+
+onMounted(async () => {
+  try {
+    course.value = await fetchCourse(route.params.id as string);
+  } catch {
+    navigateTo("/");
+    return;
+  }
+
+  try {
+    const me = await fetchMe();
+    user.value = me;
+    isAdded.value = (me.selectedCourses ?? []).includes(route.params.id as string);
+  } catch {
+    // гость — это норма, кнопка покажет «Войдите…»
+  } finally {
+    isLoading.value = false;
+  }
+});
+
+async function saveCourse() {
+  isPending.value = true;
+  errorText.value = "";
+  try {
+    await addCourse(route.params.id as string);
+    isAdded.value = true;
+    message.value = "Курс добавлен в ваши тренировки!";
+  } catch (e) {
+    errorText.value =
+      e instanceof Error ? e.message : "Не удалось добавить курс";
+  } finally {
+    isPending.value = false;
+  }
+}
+
+function onBtnClick() {
+  if (!user.value) {
+    isModalOpen.value = true;
+    return;
+  }
+  saveCourse();
+}
+
+function onAuthSuccess() {
+  isModalOpen.value = false;
+  saveCourse();
+}
+
+const buttonText = computed(() => {
+  if (isAdded.value) return "Курс уже добавлен ✓";
+  if (isPending.value) return "Добавляем…";
+  if (!user.value) return "Войдите, чтобы добавить курс";
+  return "Выбрать курс";
+});
 
 const advantages = [
   "проработка всех групп мышц",
@@ -33,14 +84,14 @@ const advantages = [
 
     <div class="course-page">
       <section class="course-page__banner">
-        <h1 class="course-page__title">Йога</h1>
+        <h1 class="course-page__title">{{ course?.nameRU ?? "" }}</h1>
       </section>
 
       <section class="course-page__benefits">
         <h2 class="course-page__subtitle">Подойдет для вас, если:</h2>
         <ul class="benefits-list">
           <li
-            v-for="(benefit, index) in benefits"
+            v-for="(benefit, index) in course?.fitting ?? []"
             :key="benefit"
             class="benefits-item"
           >
@@ -54,7 +105,7 @@ const advantages = [
         <h2 class="course-page__subtitle">Направления</h2>
         <div class="directions">
           <p
-            v-for="direction in directions"
+            v-for="direction in course?.directions ?? []"
             :key="direction"
             class="directions__item"
           >
@@ -135,12 +186,8 @@ const advantages = [
             />
           </svg>
         </div>
-        <img 
-          src="/img/athlete.png" 
-          alt="" 
-          class="course-page__cta-img" 
-        >
-        <img  
+        <img src="/img/athlete.png" alt="" class="course-page__cta-img" >
+        <img
           src="/img/athleteMobyle.png"
           alt=""
           class="course-page__cta-img-mobyle"
@@ -148,15 +195,30 @@ const advantages = [
 
         <section class="course-page__cta">
           <div class="course-page__cta-info">
-            <h2 class="course-page__cta-subtitle">Начните путь к новому телу</h2>
+            <h2 class="course-page__cta-subtitle">
+              Начните путь к новому телу
+            </h2>
             <ul class="course-page__cta-list">
               <li v-for="item in advantages" :key="item">{{ item }}</li>
             </ul>
-            <button class="course-page__btn">Войдите, чтобы добавить курс</button>
+            <button
+              class="course-page__btn"
+              :disabled="isAdded || isPending"
+              @click="onBtnClick"
+            >
+              {{ buttonText }}
+            </button>
+            <p v-if="message" class="course-page__cta-message">{{ message }}</p>
+            <p v-if="errorText" class="course-page__cta-error">{{ errorText }}</p>
           </div>
         </section>
       </div>
     </div>
+    <ModalLogin
+      v-if="isModalOpen"
+      @close="isModalOpen = false"
+      @success="onAuthSuccess"
+    />
   </div>
 </template>
 

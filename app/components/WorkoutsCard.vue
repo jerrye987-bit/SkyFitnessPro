@@ -1,26 +1,45 @@
 <script setup lang="ts">
-import type { Course } from '~/data/courses'
+import type { CourseCardView } from "~/types/course";
+import { useCourses } from "~/composables/useCourses";
+import { useAuth } from "~/composables/useAuth";
 
-const emit = defineEmits<{ addCourse: [courseId: string] }>()
-const props = defineProps<{ course: Course }>()
+const props = defineProps<{ course: CourseCardView }>();
+const { addCourse } = useCourses();
+const { fetchMe } = useAuth();
 
-function addCourse() {
-  emit('addCourse', props.course.id)
+const isAdded = ref(false);
+const isPending = ref(false);
+
+async function handleAddCourse() {
+  if (isPending.value || isAdded.value) return;
+  isPending.value = true;
+
+  try {
+    const res = await addCourse(props.course.id);
+    isAdded.value = true;
+    console.log(res.message); // "Курс успешно добавлен!"
+    await fetchMe();
+  } catch (e) {
+    console.error(e instanceof Error ? e.message : "Ошибка при добавлении курса");
+  } finally {
+    isPending.value = false;
+  }
 }
 </script>
+
 
 <template>
   <article class="card">
     <NuxtLink
       :to="`/courses/${course.id}`"
       class="card__link"
-      :aria-label="`Перейти к курсу ${course.name}`"
+      :aria-label="`Перейти к курсу ${course.nameRU}`"
     >
       <div class="card__media" :style="{ background: course.bg }">
-        <img :src="course.image" :alt="course.name" class="card__img">
+        <img :src="course.image" :alt="course.nameRU" class="card__img">
       </div>
       <div class="card__body">
-        <h2 class="card__title">{{ course.name }}</h2>
+        <h2 class="card__title">{{ course.nameRU }}</h2>
         <ul class="card__tags">
           <li class="card__tag">
             <img src="/img/day.svg" alt="" class="card__tag-icon">
@@ -32,7 +51,7 @@ function addCourse() {
           </li>
           <li class="card__tag">
             <img src="/img/complexity.svg" alt="" class="card__tag-icon">
-            Сложность
+            {{ course.complexity }}
           </li>
         </ul>
       </div>
@@ -42,7 +61,7 @@ function addCourse() {
       class="card__plus" 
       type="button" 
       aria-label="Добавить курс"
-      @click="addCourse"
+      @click="handleAddCourse"
       >
       <img src="/img/plus.svg" alt="" class="card__plus-icon">
     </button>

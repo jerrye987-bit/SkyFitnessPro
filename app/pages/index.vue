@@ -1,14 +1,43 @@
 <script setup lang="ts">
-import { courses } from '~/data/courses'
+import type { CourseCardView } from "~/types/course";
+import { defaultMeta, getCourseMeta } from "~/data/courseMeta";
+import { useCourses } from "~/composables/useCourses";
+
+const { fetchCourses } = useCourses();
+
+const courses = ref<CourseCardView[]>([]);
+const isLoading = ref(true);
+const errorText = ref("");
 
 function scrollToTop() {
-  window.scrollTo({ top: 0, behavior: 'smooth' })
+  window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
-function handleAddCourse(courseId: string) {
-  console.log('Добавляем курс:', courseId)
-}
+onMounted(async () => {
+  try {
+    const data = await fetchCourses();
+
+    courses.value = data.map((c) => {
+      const meta = getCourseMeta(c.nameEN);
+      return {
+        ...c,
+        id: c._id,
+        image: meta.image ?? defaultMeta.image,
+        bg: meta.bg ?? defaultMeta.bg,
+        duration: meta.duration ?? defaultMeta.duration,
+        perDay: meta.perDay ?? defaultMeta.perDay,
+        complexity: meta.complexity ?? defaultMeta.complexity,
+      };
+    });
+  } catch (e) {
+    errorText.value =
+      e instanceof Error ? e.message : "Не удалось загрузить курсы";
+  } finally {
+    isLoading.value = false;
+  }
+});
 </script>
+
 
 <template>
   <div>
@@ -17,28 +46,31 @@ function handleAddCourse(courseId: string) {
     <main class="page">
       <section class="hero container">
         <h1 class="hero__title">
-          Начните заниматься спортом
-          и улучшите качество жизни
+          Начните заниматься спортом и улучшите качество жизни
         </h1>
-        <div class="hero__note">
-          Измени своё<br>тело за полгода!
-        </div>
+        <div class="hero__note">Измени своё<br >тело за полгода!</div>
       </section>
 
       <section class="workouts container">
-          <WorkoutsCard
+        <template v-if="isLoading">
+          <p>Загружаем курсы…</p>
+        </template>
+        <template v-else-if="errorText">
+          <p class="workouts__error">{{ errorText }}</p>
+        </template>
+        <WorkoutsCard
           v-for="course in courses"
+          v-else
           :key="course.id"
           :course="course"
-          @add-course="handleAddCourse"
-          />
+        />
       </section>
 
       <section class="up container">
-          <button class="up__button" type="button" @click="scrollToTop">
-              Наверх
-              <span class="up__arrow">↑</span>
-          </button>
+        <button class="up__button" type="button" @click="scrollToTop">
+          Наверх
+          <span class="up__arrow">↑</span>
+        </button>
       </section>
     </main>
   </div>
@@ -49,12 +81,12 @@ function handleAddCourse(courseId: string) {
   display: grid;
   grid-template-columns: 1fr auto;
   align-items: start;
-  column-gap: 20px; 
+  column-gap: 20px;
   padding: 10px 0 50px;
 }
 
 .hero__title {
-  font-size: 60px; 
+  font-size: 60px;
   font-weight: 500;
   line-height: 1;
 }
@@ -62,21 +94,21 @@ function handleAddCourse(courseId: string) {
 .hero__note {
   padding: 16px 20px;
   background: var(--color-accent);
-  border-radius: 5px; 
-  font-size: 32px; 
+  border-radius: 5px;
+  font-size: 32px;
   font-weight: 400;
   line-height: 1.1;
   position: relative;
 }
 
 .hero__note::after {
-  content: '';
+  content: "";
   position: absolute;
   top: 88%;
-  left: 117px;          
-  width: 30px;   
+  left: 117px;
+  width: 30px;
   height: 35px;
-  background: url('/img/note-tail.svg') no-repeat center / contain;
+  background: url("/img/note-tail.svg") no-repeat center / contain;
 }
 
 .workouts {
@@ -89,7 +121,7 @@ function handleAddCourse(courseId: string) {
 .up {
   display: flex;
   justify-content: center;
-  padding-bottom: 81px; 
+  padding-bottom: 81px;
 }
 
 .up__button {
@@ -101,7 +133,7 @@ function handleAddCourse(courseId: string) {
   border-radius: 46px;
   background: var(--color-accent);
   color: var(--color-text);
-  font-family: 'Roboto';
+  font-family: "Roboto";
   font-size: 18px;
   font-weight: 400;
   line-height: 1.1;
@@ -123,13 +155,13 @@ function handleAddCourse(courseId: string) {
     line-height: 1.1;
   }
 
-    .hero__note {
+  .hero__note {
     display: none;
   }
 
   .workouts {
     grid-template-columns: 1fr;
-    gap: 24px; 
+    gap: 24px;
     padding: 0 0 24px;
   }
 

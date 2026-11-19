@@ -1,20 +1,93 @@
 <script setup lang="ts">
-import type { Course } from "~/data/courses";
-import { courses } from "~/data/courses";
+import { getCourseMeta, defaultMeta } from "~/data/courseMeta";
+import { useCourses } from "~/composables/useCourses";
+import { useAuth } from "~/composables/useAuth";
 
-definePageMeta({
-  middleware: "auth",
-});
+definePageMeta({ middleware: "auth" });
 
-const { fetchMe, logout } = useAuth();
+const { fetchCourses, fetchCourseWorkouts, fetchProgress, removeCourse: removeCourseApi } = useCourses();
+const { user, fetchMe, logout } = useAuth();
+
+type MyWorkout = { id: string; name: string; done: boolean };
+
+type MyCourse = {
+  id: string;
+  name: string;
+  image: string;
+  bg: string;
+  duration: string;
+  perDay: string;
+  complexity: number;
+  progress: number;
+  workouts: MyWorkout[];
+};
+
+const myCourses = ref<MyCourse[]>([]);
+
 
 onMounted(async () => {
-  try {
-    user.value = await fetchMe();
-  } catch {
-    logout();
-    navigateTo("/");
+  console.log("профиль видит user:", user.value);
+  // 1. Пользователь: берём из стора или догружаем
+  if (!user.value) {
+    try {
+      await fetchMe();
+    } catch (e) {
+      console.error("profile: fetchMe упал", e);
+      navigateTo("/"); // нет сессии — на главную, но НЕ logout
+      return;
+    }
   }
+
+  // 2. Каталог: без него карточки не собрать
+  let catalog;
+  try {
+    catalog = await fetchCourses();
+  } catch (e) {
+    console.error("profile: fetchCourses упал", e);
+    return; // курсы не загрузились, но сессия цела — просто пустой экран
+  }
+
+  // 3. Каждый курс — изолированно: один сломанный не рушит остальные
+  myCourses.value = (
+    await Promise.all(
+      (user.value?.selectedCourses ?? []).map(async (courseId) => {
+        try {
+          const course = catalog.find((c) => c._id === courseId);
+          if (!course) return null;
+
+          const [workouts, progress] = await Promise.all([
+            fetchCourseWorkouts(courseId),
+            fetchProgress(courseId).catch(() => null),
+          ]);
+
+          const doneCount =
+            progress?.workoutsProgress?.filter((w) => w.workoutCompleted).length ?? 0;
+          const meta = getCourseMeta(course.nameEN);
+
+          return {
+            id: course._id,
+            name: course.nameRU,
+            image: meta.image ?? defaultMeta.image,
+            bg: meta.bg ?? defaultMeta.bg,
+            duration: meta.duration ?? defaultMeta.duration,
+            perDay: meta.perDay ?? defaultMeta.perDay,
+            complexity: meta.complexity ?? defaultMeta.complexity,
+            progress: Math.round((doneCount / (workouts.length || 1)) * 100),
+            workouts: workouts.map((w) => ({
+              id: w._id,
+              name: w.name,
+              done:
+                progress?.workoutsProgress?.find((p) => p.workoutId === w._id)
+                  ?.workoutCompleted ?? false,
+            })),
+          };
+        } catch (e) {
+          console.error(`profile: курс ${courseId} не загрузился`, e);
+          return null;
+        }
+      }),
+    )
+  ).filter((c): c is MyCourse => c !== null);
 });
 
 function onLogout() {
@@ -22,70 +95,45 @@ function onLogout() {
   navigateTo("/");
 }
 
-type CourseProgress = { id: string; progress?: number; total?: number };
-
-const user = ref<{
-  email: string;
-  selectedCourses: string[];
-  courseProgress: CourseProgress[];
-} | null>(null);
-
 function buttonLabel(progress: number) {
   if (progress === 0) return "Начать тренировки";
   if (progress === 100) return "Начать заново";
   return "Продолжить";
 }
 
-// Склеиваем: данные курса + личный прогресс
-const myCoursesFull = computed(() => {
-  if (!user.value) return [];
-
-  return user.value.selectedCourses
-    .map((id) => {
-      const course = courses.find((c) => c.id === id);
-      if (!course) return null;
-
-      // прогресс берём из courseProgress, если сервер его прислал
-      const progressInfo = user.value!.courseProgress.find((p) => p.id === id);
-      const progress = progressInfo?.progress
-        ? Math.round((progressInfo.progress / (progressInfo.total || 1)) * 100)
-        : 0;
-
-      return { ...course, progress };
-    })
-    .filter((c): c is Course & { progress: number } => c !== null);
-});
-
-
 function scrollToTop() {
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
 const isModalOpen = ref(false);
-const activeCourse = ref<Course | null>(null);
+const activeCourse = ref<MyCourse | null>(null);
 
-function openWorkouts(course: Course & { progress: number }) {
+function openWorkouts(course: MyCourse) {
   activeCourse.value = course;
   isModalOpen.value = true;
 }
 
 function startTraining(trainingId: string) {
   isModalOpen.value = false;
-  // Защита на случай, если activeCourse.value вдруг null
-  if (activeCourse.value?.id) {
+  if (activeCourse.value) {
     navigateTo(`/courses/${activeCourse.value.id}/workout/${trainingId}`);
   }
 }
 
-function removeCourse(course: Course & { progress: number }) {
+async function removeCourse(course: MyCourse) {
   if (!user.value) return;
-
-  const index = user.value.selectedCourses.indexOf(course.id);
-  if (index !== -1) {
-    user.value.selectedCourses.splice(index, 1);
+  try {
+    await removeCourseApi(course.id);
+    user.value.selectedCourses = user.value.selectedCourses.filter(
+      (id) => id !== course.id,
+    );
+    myCourses.value = myCourses.value.filter((c) => c.id !== course.id);
+  } catch (e) {
+    console.error(e instanceof Error ? e.message : "Не удалось удалить курс");
   }
 }
 </script>
+
 
 <template>
     <div>
@@ -111,7 +159,7 @@ function removeCourse(course: Course & { progress: number }) {
             <h2 class="my-courses__title">Мои курсы</h2>
             <ul class="courses-grid">
                 <li 
-                    v-for="course in myCoursesFull" 
+                    v-for="course in myCourses" 
                     :key="course.id" 
                     class="course-card"
                   >
@@ -190,7 +238,7 @@ function removeCourse(course: Course & { progress: number }) {
 
         <ModalSelectWorkout
           v-if="isModalOpen && activeCourse"
-          :trainings="activeCourse.trainings"
+          :workouts="activeCourse.workouts"
           @close="isModalOpen = false"
           @start="startTraining"
         />
