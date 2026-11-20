@@ -8,9 +8,48 @@ const { fetchCourses } = useCourses();
 const courses = ref<CourseCardView[]>([]);
 const isLoading = ref(true);
 const errorText = ref("");
+const isLoginModalOpen = ref(false);
+const pendingCourseId = ref<string | null>(null);
+
+const { user } = useAuth();
+const { addCourse } = useCourses();
+
+function onNeedAuth(courseId: string) {
+  pendingCourseId.value = courseId;
+  isLoginModalOpen.value = true;
+}
 
 function scrollToTop() {
   window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+function onLoginModalClose() {
+  isLoginModalOpen.value = false;
+
+  const courseId = pendingCourseId.value;
+  pendingCourseId.value = null;
+
+  if (courseId && user.value) {
+    if (!isCourseAdded(courseId)) {
+      saveCourse(courseId);
+    }
+  }
+}
+
+function isCourseAdded(courseId: string) {
+  return (user.value?.selectedCourses ?? []).includes(courseId);
+}
+
+async function saveCourse(courseId: string) {
+  const currentUser = user.value;
+  if (!currentUser) return;
+
+  try {
+    await addCourse(courseId);
+    currentUser.selectedCourses = [...(currentUser.selectedCourses ?? []), courseId];
+  } catch (e) {
+    console.error(e instanceof Error ? e.message : "Ошибка при добавлении курса");
+  }
 }
 
 onMounted(async () => {
@@ -60,11 +99,16 @@ onMounted(async () => {
         </template>
         <WorkoutsCard
           v-for="course in courses"
-          v-else
           :key="course.id"
           :course="course"
+          @need-auth="onNeedAuth"
         />
       </section>
+
+      <ModalLogin
+        v-if="isLoginModalOpen"
+        @close="onLoginModalClose"
+      />
 
       <section class="up container">
         <button class="up__button" type="button" @click="scrollToTop">
@@ -167,6 +211,13 @@ onMounted(async () => {
 
   .up {
     justify-content: flex-end;
+  }
+
+  .up__button {
+    position: fixed;
+    right: 16px;
+    bottom: 16px;
+    z-index: 10;
   }
 }
 </style>

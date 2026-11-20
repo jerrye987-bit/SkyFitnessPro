@@ -8,6 +8,8 @@ export const courseImages: Record<string, string> = {
 
 interface CourseMeta {
   image?: string;
+  banner?: string;
+  bannerMobile?: string;
   bg?: string;
   duration?: string;
   perDay?: string;
@@ -17,6 +19,8 @@ interface CourseMeta {
 export const courseMeta: Record<string, CourseMeta> = {
   yoga: {
     image: courseImages.Yoga,
+    banner: "/img/skillYoga.png",
+    bannerMobile: "/img/yoga.png",
     bg: "#FFC700",
     duration: "25 дней",
     perDay: "20-50 мин/день",
@@ -24,6 +28,8 @@ export const courseMeta: Record<string, CourseMeta> = {
   },
   stretching: {
     image: courseImages.Stretching,
+    banner: "/img/skillStretch.png",
+    bannerMobile: "/img/stretch.png",
     bg: "#2491D2",
     duration: "25 дней",
     perDay: "20-50 мин/день",
@@ -31,6 +37,8 @@ export const courseMeta: Record<string, CourseMeta> = {
   },
   fitness: {
     image: courseImages.Fitness,
+    banner: "/img/skillFitness.png",
+    bannerMobile: "/img/fitness.png",
     bg: "#F7A012",
     duration: "25 дней",
     perDay: "20-50 мин/день",
@@ -38,6 +46,8 @@ export const courseMeta: Record<string, CourseMeta> = {
   },
   stepairobic: {
     image: courseImages.Step,
+    banner: "/img/skillStep.png",
+    bannerMobile: "/img/step.png",
     bg: "#FF7E65",
     duration: "25 дней",
     perDay: "20-50 мин/день",
@@ -45,6 +55,8 @@ export const courseMeta: Record<string, CourseMeta> = {
   },
   bodyflex: {
     image: courseImages.Bodyflex,
+    banner: "/img/skillBody.png",
+    bannerMobile: "/img/bodyflex.png",
     bg: "#7D458C",
     duration: "25 дней",
     perDay: "20-50 мин/день",
@@ -54,6 +66,8 @@ export const courseMeta: Record<string, CourseMeta> = {
 
 export const defaultMeta: Required<CourseMeta> = {
   image: "/img/default.png",
+  banner: "",
+  bannerMobile: "",
   bg: "#F7F7F7",
   duration: "",
   perDay: "",

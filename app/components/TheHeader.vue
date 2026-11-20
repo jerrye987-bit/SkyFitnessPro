@@ -92,7 +92,7 @@ function onLogout() {
           type="button"
           @click="toggleDropdown"
         >
-          <img src="/img/avatarIcon.svg" alt="" class="header__user-avatar" >
+          <NuxtImg src="/img/avatarIcon.svg" alt="" class="header__user-avatar" />
           <span class="header__user-name">{{ user && userName(user) }}</span>
           <svg
             class="header__user-arrow"
@@ -171,6 +171,7 @@ function onLogout() {
 
 .header__btn {
   grid-area: btn;
+  align-self: center;
   padding: 16px 26px;
   border: none;
   border-radius: 46px;
@@ -192,6 +193,7 @@ function onLogout() {
 .header__user {
   position: relative;
   justify-self: end;
+  align-self: center;
 }
 
 .header__user-btn {

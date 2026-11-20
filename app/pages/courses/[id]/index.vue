@@ -1,12 +1,12 @@
 <script setup lang="ts">
-import type { CourseFull, CourseUser } from "~/types/course";
+import type { CourseFull } from "~/types/course";
+import { getCourseMeta } from "~/data/courseMeta";
 
 const route = useRoute();
 const { fetchCourse, addCourse } = useCourses();
-const { fetchMe } = useAuth();
+const { fetchMe, user } = useAuth();
 
 const course = ref<CourseFull | null>(null);
-const user = ref<CourseUser | null>(null);
 
 const isModalOpen = ref(false);
 const isPending = ref(false);
@@ -24,9 +24,10 @@ onMounted(async () => {
   }
 
   try {
-    const me = await fetchMe();
-    user.value = me;
-    isAdded.value = (me.selectedCourses ?? []).includes(route.params.id as string);
+    if (!user.value) await fetchMe();
+    isAdded.value = (user.value?.selectedCourses ?? []).includes(
+      route.params.id as string,
+    );
   } catch {
     // гость — это норма, кнопка покажет «Войдите…»
   } finally {
@@ -35,12 +36,23 @@ onMounted(async () => {
 });
 
 async function saveCourse() {
+  if ((user.value?.selectedCourses ?? []).includes(route.params.id as string)) {
+    isAdded.value = true;
+    return;
+  }
+
   isPending.value = true;
   errorText.value = "";
   try {
     await addCourse(route.params.id as string);
     isAdded.value = true;
-    message.value = "Курс добавлен в ваши тренировки!";
+    // синхронизируем стор с сервером
+    if (user.value) {
+      user.value.selectedCourses = [
+        ...(user.value.selectedCourses ?? []),
+        route.params.id as string,
+      ];
+    }
   } catch (e) {
     errorText.value =
       e instanceof Error ? e.message : "Не удалось добавить курс";
@@ -57,9 +69,10 @@ function onBtnClick() {
   saveCourse();
 }
 
-function onAuthSuccess() {
+function onModalClose() {
   isModalOpen.value = false;
-  saveCourse();
+  // если модалку закрыли уже залогиненным — досыпаем курс
+  if (user.value) saveCourse();
 }
 
 const buttonText = computed(() => {
@@ -68,6 +81,14 @@ const buttonText = computed(() => {
   if (!user.value) return "Войдите, чтобы добавить курс";
   return "Выбрать курс";
 });
+
+const meta = computed(() => getCourseMeta(course.value?.nameEN ?? ""));
+
+const bannerStyle = computed(() => ({
+  "--banner-img": `url(${meta.value.banner ?? "/img/skillYoga.png"})`,
+  "--banner-img-mobile": `url(${meta.value.bannerMobile ?? meta.value.banner ?? "/img/skillYoga.png"})`,
+  "--banner-bg": meta.value.bg ?? "#ffc700",
+}));
 
 const advantages = [
   "проработка всех групп мышц",
@@ -83,7 +104,7 @@ const advantages = [
     <TheHeader show-subtitle />
 
     <div class="course-page">
-      <section class="course-page__banner">
+      <section class="course-page__banner" :style="bannerStyle">
         <h1 class="course-page__title">{{ course?.nameRU ?? "" }}</h1>
       </section>
 
@@ -186,7 +207,11 @@ const advantages = [
             />
           </svg>
         </div>
-        <img src="/img/athlete.png" alt="" class="course-page__cta-img" >
+        <NuxtImg 
+          src="/img/athlete.png" 
+          alt="" 
+          class="course-page__cta-img" 
+        />
         <img
           src="/img/athleteMobyle.png"
           alt=""
@@ -209,16 +234,14 @@ const advantages = [
               {{ buttonText }}
             </button>
             <p v-if="message" class="course-page__cta-message">{{ message }}</p>
-            <p v-if="errorText" class="course-page__cta-error">{{ errorText }}</p>
+            <p v-if="errorText" class="course-page__cta-error">
+              {{ errorText }}
+            </p>
           </div>
         </section>
       </div>
     </div>
-    <ModalLogin
-      v-if="isModalOpen"
-      @close="isModalOpen = false"
-      @success="onAuthSuccess"
-    />
+    <ModalLogin v-if="isModalOpen" @close="onModalClose" />
   </div>
 </template>
 
@@ -231,7 +254,8 @@ const advantages = [
   min-height: 310px;
   padding: 40px;
   border-radius: 30px;
-  background: #ffc700 url("/img/skillYoga.png") no-repeat right center / contain;
+  background: var(--banner-bg, #ffc700) var(--banner-img) no-repeat right
+    center / contain;
 }
 
 .course-page__title {
@@ -437,8 +461,8 @@ const advantages = [
     min-height: auto;
     padding: 0;
     aspect-ratio: 343 / 389;
-    background: #ffc700 url("/img/skillYogaMobyle.png") no-repeat center /
-      contain;
+    background: var(--banner-bg, #ffc700) var(--banner-img-mobile) no-repeat
+      center / cover;
   }
 
   .course-page__title {

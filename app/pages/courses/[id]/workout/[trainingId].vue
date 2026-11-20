@@ -12,17 +12,20 @@ const workout = ref<WorkoutFull | null>(null);
 const progressData = ref<number[]>([]);
 const isLoading = ref(true);
 
+const loadError = ref("");
+
 onMounted(async () => {
   try {
     workout.value = await fetchWorkout(workoutId);
     const progress = await fetchProgress(courseId, workoutId).catch(() => null);
     progressData.value = progress?.progressData ?? [];
   } catch {
-    throw createError({ statusCode: 404, statusMessage: "Тренировка не найдена", fatal: true });
+    loadError.value = "Тренировка не найдена";
   } finally {
     isLoading.value = false;
   }
 });
+
 
 const isProgressOpen = ref(false);
 const isSuccessOpen = ref(false);
@@ -94,7 +97,9 @@ async function saveProgress(updated: { name: string; progress: number }[]) {
     <div>
         <TheHeader />
 
-        <main v-if="workout" class="workout">
+        <p v-if="loadError" class="workout__error">{{ loadError }}</p>
+
+        <main v-else-if="workout" class="workout">
             <h1 class="workout__title">{{ workout.name }}</h1>
 
             <div class="workout__video">
@@ -107,10 +112,10 @@ async function saveProgress(updated: { name: string; progress: number }[]) {
             />
             </div>
 
-            <section class="workout__exercises-card">
+            <section v-if="workout.exercises?.length" class="workout__exercises-card">
             <h2 class="workout__exercises-title">Упражнения тренировки {{ workout.name }}</h2>
 
-            <div v-if="workout.exercises?.length" class="workout__exercises">
+            <div class="workout__exercises">
               <div
                 v-for="(ex, i) in workout.exercises"
                 :key="ex._id"
@@ -122,8 +127,6 @@ async function saveProgress(updated: { name: string; progress: number }[]) {
                 </div>
               </div>
             </div>
-
-            <p v-else>Для этой тренировки пока нет упражнений</p>
 
             <button 
                 class="workout__submit" 
@@ -155,11 +158,18 @@ async function saveProgress(updated: { name: string; progress: number }[]) {
               </div>
             </Transition>
         </main>
+
         <p v-else-if="isLoading">Загрузка…</p>
     </div>
 </template>
 
 <style scoped>
+.workout__error {
+  padding: 60px 0;
+  font-size: 24px;
+  color: var(--color-text);
+}
+
 .workout__title {
     font-size: 60px;
     font-weight: 500;

@@ -26,7 +26,6 @@ const myCourses = ref<MyCourse[]>([]);
 
 
 onMounted(async () => {
-  console.log("профиль видит user:", user.value);
   // 1. Пользователь: берём из стора или догружаем
   if (!user.value) {
     try {
@@ -145,7 +144,7 @@ async function removeCourse(course: MyCourse) {
             <!-- карточка профиля -->
             <section v-if="user" class="profile-card">
               <div class="profile-card__avatar">
-                  <img src="/img/avatar.svg" alt="" class="profile-card__avatar-img" >
+                  <NuxtImg src="/img/avatar.svg" alt="" class="profile-card__avatar-img" />
               </div>
               <div class="profile-card__info">
                   <h2 class="profile-card__name">{{ user.email.split("@")[0] }}</h2>

@@ -5,20 +5,32 @@ import { useAuth } from "~/composables/useAuth";
 
 const props = defineProps<{ course: CourseCardView }>();
 const { addCourse } = useCourses();
-const { fetchMe } = useAuth();
+const { user } = useAuth();
 
-const isAdded = ref(false);
 const isPending = ref(false);
+
+const isAdded = computed(() =>
+  user.value?.selectedCourses?.includes(props.course.id) ?? false,
+);
+
+const emit = defineEmits<{ needAuth: [courseId: string] }>();
 
 async function handleAddCourse() {
   if (isPending.value || isAdded.value) return;
-  isPending.value = true;
 
+  // гость — просим родителя открыть модалку входа
+  if (!user.value) {
+    emit("needAuth", props.course.id);
+    return;
+  }
+
+  isPending.value = true;
   try {
-    const res = await addCourse(props.course.id);
-    isAdded.value = true;
-    console.log(res.message); // "Курс успешно добавлен!"
-    await fetchMe();
+    await addCourse(props.course.id);
+    user.value.selectedCourses = [
+      ...(user.value.selectedCourses ?? []),
+      props.course.id,
+    ];
   } catch (e) {
     console.error(e instanceof Error ? e.message : "Ошибка при добавлении курса");
   } finally {
@@ -36,7 +48,7 @@ async function handleAddCourse() {
       :aria-label="`Перейти к курсу ${course.nameRU}`"
     >
       <div class="card__media" :style="{ background: course.bg }">
-        <img :src="course.image" :alt="course.nameRU" class="card__img">
+        <NuxtImg :src="course.image" :alt="course.nameRU" class="card__img" />
       </div>
       <div class="card__body">
         <h2 class="card__title">{{ course.nameRU }}</h2>
@@ -60,10 +72,28 @@ async function handleAddCourse() {
     <button 
       class="card__plus" 
       type="button" 
-      aria-label="Добавить курс"
+      :disabled="isAdded || isPending"
+      :aria-label="isAdded ? 'Курс добавлен' : 'Добавить курс'"
       @click="handleAddCourse"
       >
-      <img src="/img/plus.svg" alt="" class="card__plus-icon">
+      <svg
+        v-if="isAdded"
+        width="26" height="26" viewBox="0 0 26 26"
+        fill="none" xmlns="http://www.w3.org/2000/svg"
+      >
+        <mask id="check-hole">
+        <rect width="26" height="26" fill="white" />
+        <path
+          d="M6.5 13.5L11 18L19.5 8.5"
+          stroke="black"
+          stroke-width="3"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        />
+        </mask>
+        <circle cx="13" cy="13" r="13" fill="white" mask="url(#check-hole)" />
+      </svg>
+      <img v-else src="/img/plus.svg" alt="" class="card__plus-icon">
     </button>
   </article>
 </template>
