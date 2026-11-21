@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { CourseCardView } from "~/types/course";
-import { defaultMeta, getCourseMeta } from "~/data/courseMeta";
+import { defaultMeta, getCourseMeta, sortCoursesByMock } from "~/data/courseMeta";
 import { useCourses } from "~/composables/useCourses";
 import { useAuth } from "~/composables/useAuth";
 
@@ -14,7 +14,7 @@ const { data: courses, error: coursesError } = await useAsyncData(
   "courses",
   async () => {
     const data = await fetchCourses();
-    return data.map((c) => {
+    return sortCoursesByMock(data).map((c) => {
       const meta = getCourseMeta(c.nameEN);
       return {
         ...c,

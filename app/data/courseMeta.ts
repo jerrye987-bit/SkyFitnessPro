@@ -74,6 +74,23 @@ export const defaultMeta: Required<CourseMeta> = {
   complexity: 0,
 };
 
+// data/courseMeta.ts или рядом
+export const COURSE_ORDER = [
+  "Yoga",
+  "Stretching",
+  "Fitness",
+  "StepAirobic",
+  "BodyFlex",
+];
+
+export function sortCoursesByMock<T extends { nameEN: string }>(courses: T[]): T[] {
+  return [...courses].sort(
+    (a, b) =>
+      COURSE_ORDER.indexOf(a.nameEN) - COURSE_ORDER.indexOf(b.nameEN),
+  );
+}
+
+
 function normalizeKey(key: string): string {
   return key.trim().toLowerCase().replace(/[\s-]/g, "");
 }
