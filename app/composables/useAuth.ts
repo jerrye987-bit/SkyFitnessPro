@@ -1,4 +1,4 @@
-import { getAuthToken } from "~/utils/api.ts"; 
+import { getAuthToken, request } from "~/utils/api"; 
 
 type Me = {
     email: string;

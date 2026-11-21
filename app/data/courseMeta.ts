@@ -84,11 +84,16 @@ export const COURSE_ORDER = [
 ];
 
 export function sortCoursesByMock<T extends { nameEN: string }>(courses: T[]): T[] {
+  const positions = new Map(
+    COURSE_ORDER.map((name, i) => [normalizeKey(name), i] as const),
+  );
   return [...courses].sort(
     (a, b) =>
-      COURSE_ORDER.indexOf(a.nameEN) - COURSE_ORDER.indexOf(b.nameEN),
+      (positions.get(normalizeKey(a.nameEN)) ?? COURSE_ORDER.length) -
+      (positions.get(normalizeKey(b.nameEN)) ?? COURSE_ORDER.length),
   );
 }
+
 
 
 function normalizeKey(key: string): string {

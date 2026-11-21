@@ -1,3 +1,6 @@
+import { request } from "~/utils/api";
+import { useAuth } from "~/composables/useAuth";
+
 import type {
   CourseShort,
   CourseFull,

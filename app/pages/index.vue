@@ -49,10 +49,7 @@ async function saveCourse(courseId: string) {
 
   try {
     await addCourse(courseId);
-    currentUser.selectedCourses = [
-      ...(currentUser.selectedCourses ?? []), 
-      courseId,
-    ];
+    
   } catch (e) {
     console.error(
       e instanceof Error ? e.message : "Ошибка при добавлении курса"
