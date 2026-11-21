@@ -1,38 +1,24 @@
 <script setup lang="ts">
-import type { Training } from "~/data/courses";
+type WorkoutItem = { id: string; name: string; done: boolean };
 
-const props = defineProps<{ trainings: Training[] }>();
+const props = defineProps<{ workouts: WorkoutItem[] }>();
 const emit = defineEmits<{
   close: [];
   start: [trainingId: string];
 }>();
 
-const selectedId = ref<string | null>(null);
-
-function pick(id: string) {
-  selectedId.value = id;
-}
+const selected = ref<string | null>(null);
 
 function onStart() {
-  if (selectedId.value !== null) {
-    emit("start", selectedId.value);
+  if (selected.value !== null) {
+    emit("start", selected.value);
   }
 }
 
-function onKeydown(event: KeyboardEvent) {
-  if (event.key === "Escape") {
-    emit("close");
-  }
-}
-
-onMounted(() => {
-  window.addEventListener("keydown", onKeydown);
-});
-
-onUnmounted(() => {
-  window.removeEventListener("keydown", onKeydown);
-});
+useModalEsc(() => emit("close"));
 </script>
+
+
 
 <template>
   <div class="modal-overlay" @click.self="emit('close')">
@@ -41,24 +27,24 @@ onUnmounted(() => {
 
       <ul class="select-workout__list">
         <li
-          v-for="training in props.trainings"
-          :key="training.id"
+          v-for="workout in props.workouts"
+          :key="workout.id"
           class="select-workout__item"
         >
           <button
             class="select-workout__row"
             type="button"
-            @click="pick(training.id)"
+            @click="selected = workout.id"
           >
             <span
               class="select-workout__mark"
               :class="{
-                'select-workout__mark--done': training.done,
-                'select-workout__mark--selected': selectedId === training.id,
+                'select-workout__mark--done': workout.done,
+                'select-workout__mark--selected': selected === workout.id,
               }"
             >
               <!-- галочка для пройденных -->
-              <svg v-if="training.done" width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <svg v-if="workout.done" width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path d="M10 20C15.5228 20 20 15.5228 20 10C20 4.47715 15.5228 0 10 0C4.47715 0 0 4.47715 0 10C0 15.5228 4.47715 20 10 20ZM9.91339 14.1459L15.4134 7.64594L13.8866 6.35406L9.1373 11.9669L6.40258 8.8415L4.89742 10.1585L8.39742 14.1585C8.58922 14.3777 8.86704 14.5024 9.15829 14.5C9.44953 14.4976 9.72525 14.3683 9.91339 14.1459Z" fill-rule="evenodd" clip-rule="evenodd" fill="#BCEC30"/>
               </svg>
 
@@ -66,11 +52,9 @@ onUnmounted(() => {
               <svg v-else width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <circle cx="12" cy="12" r="9.5" stroke="black"/>
               </svg>
-
             </span>
             <span class="select-workout__text">
-              <span class="select-workout__name">{{ training.title }}</span>
-              <span class="select-workout__subtitle">{{ training.subtitle }}</span>
+              <span class="select-workout__name">{{ workout.name }}</span>
             </span>
           </button>
         </li>
@@ -79,7 +63,7 @@ onUnmounted(() => {
       <button
         class="select-workout__start"
         type="button"
-        :disabled="selectedId === null"
+        :disabled="selected === null"
         @click="onStart"
       >
         Начать
@@ -89,15 +73,7 @@ onUnmounted(() => {
 </template>
 
 <style scoped>
-.modal-overlay {
-  position: fixed;
-  inset: 0;
-  z-index: 50;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: rgba(0, 0, 0, 0.4);
-}
+
 
 .select-workout {
   display: flex;
@@ -144,14 +120,6 @@ onUnmounted(() => {
 
 .select-workout__name {
   font-size: 24px;
-  font-weight: 400;
-  line-height: 1.1;
-  color: var(--color-text);
-  font-family: 'Roboto';
-}
-
-.select-workout__subtitle {
-  font-size: 16px;
   font-weight: 400;
   line-height: 1.1;
   color: var(--color-text);
@@ -216,10 +184,6 @@ onUnmounted(() => {
 }
 
 @media (max-width: 767px) {
-  .modal-overlay {
-    padding: 16px;
-  }
-
   .select-workout {
     width: 100%;
     padding: 30px;
@@ -236,10 +200,6 @@ onUnmounted(() => {
 
   .select-workout__name {
     font-size: 18px;
-  }
-
-  .select-workout__subtitle {
-    font-size: 14px;
   }
 
   .select-workout__start {

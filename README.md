@@ -1,75 +1,70 @@
-# Nuxt Minimal Starter
+# Sky Fitness Pro
 
-Look at the [Nuxt documentation](https://nuxt.com/docs/getting-started/introduction) to learn more.
+Веб-приложение для онлайн-занятий спортом: каталог курсов, страница
+конкретного курса, добавление курсов в «Мои курсы»,
+страница профиля со списком добавленных курсов и 
+возможностью перейти на страницы конкретных тренировок с видео и 
+отслеживанием прогресса. 
+Просмотр главной страницы и страниц курсов доступен гостям,
+страница профиля и тренировки с видео и отслеживанием прогресса 
+доступны только авторизированным пользователям.
 
-## Setup
+## Стек
 
-Make sure to install dependencies:
+- **Nuxt 4** (Vue 3, SSR) — фреймворк приложения
+- **TypeScript** — типизация во всём проекте
+- **Vitest + @nuxt/test-utils** — юнит- и компонентные тесты
+- **ESLint (@nuxt/eslint)** — статический анализ кода
+- **vue-tsc** — проверка типов Vue-компонентов
+- **@nuxt/image** — оптимизация изображений
 
-```bash
-# npm
-npm install
-
-# pnpm
-pnpm install
-
-# yarn
-yarn install
-
-# bun
-bun install
-```
-
-## Development Server
-
-Start the development server on `http://localhost:3000`:
+## Запуск
 
 ```bash
-# npm
-npm run dev
-
-# pnpm
-pnpm dev
-
-# yarn
-yarn dev
-
-# bun
-bun run dev
+npm install     # установка зависимостей
+npm run dev     # dev-сервер: http://localhost:3000
 ```
 
-## Production
-
-Build the application for production:
+## Продакшен-сборка
 
 ```bash
-# npm
-npm run build
-
-# pnpm
-pnpm build
-
-# yarn
-yarn build
-
-# bun
-bun run build
+npm run build                      # сборка в .output
+npm run preview                    # или: node .output/server/index.mjs
 ```
 
-Locally preview production build:
+## Тесты
+
+Проект покрыт пирамидой тестов на Vitest — 40 штук:
+
+- **Юнит-тесты (36)** — проверяют логику независимо от UI:
+  `utils/api.ts` (функции запросов к API), композаблы `useCourses`
+  (загрузка курсов) и `useAuth` (вход и регистрация),
+  а также метаданные страниц (`data/courseMeta.ts`).
+- **Компонентные тесты (4)** — проверяют интеграцию UI и логики на
+  примере `WorkoutsCard`: отображение курса, реактивность кнопки
+  добавления, эмит события родителю и обработку неавторизованного
+  пользователя. Запускаются в nuxt-окружении (`vitest.nuxt.config.ts`),
+  сеть и хранилище мокируются.
 
 ```bash
-# npm
-npm run preview
-
-# pnpm
-pnpm preview
-
-# yarn
-yarn preview
-
-# bun
-bun run preview
+npm run test    # все тесты: юнит + компонентные
 ```
 
-Check out the [deployment documentation](https://nuxt.com/docs/getting-started/deployment) for more information.
+## Проверка кода
+
+```bash
+npm run lint        # проверка ESLint
+npm run lint:fix    # автоисправление найденных проблем
+```
+
+## Структура
+
+```text
+app/
+  components/   — компоненты (карточка курса, модалки, шапка)
+  composables/  — useAuth, useCourses
+  data/         — статические данные курса
+  pages/        — страницы (главная, курс, тренировка, профиль)
+  utils/        — API-слой
+tests/          — юнит- и компонентные тесты
+```

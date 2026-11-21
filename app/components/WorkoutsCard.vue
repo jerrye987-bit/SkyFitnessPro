@@ -1,26 +1,52 @@
 <script setup lang="ts">
-import type { Course } from '~/data/courses'
+import type { CourseCardView } from "~/types/course";
+import { useCourses } from "~/composables/useCourses";
+import { useAuth } from "~/composables/useAuth";
 
-const emit = defineEmits<{ addCourse: [courseId: string] }>()
-const props = defineProps<{ course: Course }>()
+const props = defineProps<{ course: CourseCardView }>();
+const { addCourse } = useCourses();
+const { user } = useAuth();
 
-function addCourse() {
-  emit('addCourse', props.course.id)
+const isPending = ref(false);
+
+const isAdded = computed(() =>
+  user.value?.selectedCourses?.includes(props.course.id) ?? false,
+);
+
+const emit = defineEmits<{ needAuth: [courseId: string] }>();
+
+async function handleAddCourse() {
+  if (isPending.value || isAdded.value) return;
+
+  if (!user.value) {
+    emit("needAuth", props.course.id);
+    return;
+  }
+
+  isPending.value = true;
+  try {
+    await addCourse(props.course.id);
+  } catch (e) {
+    console.error(e instanceof Error ? e.message : "Ошибка при добавлении курса");
+  } finally {
+    isPending.value = false;
+  }
 }
 </script>
+
 
 <template>
   <article class="card">
     <NuxtLink
       :to="`/courses/${course.id}`"
       class="card__link"
-      :aria-label="`Перейти к курсу ${course.name}`"
+      :aria-label="`Перейти к курсу ${course.nameRU}`"
     >
       <div class="card__media" :style="{ background: course.bg }">
-        <img :src="course.image" :alt="course.name" class="card__img">
+        <NuxtImg :src="course.image" :alt="course.nameRU" class="card__img" />
       </div>
       <div class="card__body">
-        <h2 class="card__title">{{ course.name }}</h2>
+        <h2 class="card__title">{{ course.nameRU }}</h2>
         <ul class="card__tags">
           <li class="card__tag">
             <img src="/img/day.svg" alt="" class="card__tag-icon">
@@ -32,7 +58,7 @@ function addCourse() {
           </li>
           <li class="card__tag">
             <img src="/img/complexity.svg" alt="" class="card__tag-icon">
-            Сложность
+            {{ course.complexity }}
           </li>
         </ul>
       </div>
@@ -41,10 +67,28 @@ function addCourse() {
     <button 
       class="card__plus" 
       type="button" 
-      aria-label="Добавить курс"
-      @click="addCourse"
+      :disabled="isAdded || isPending"
+      :aria-label="isAdded ? 'Курс добавлен' : 'Добавить курс'"
+      @click="handleAddCourse"
       >
-      <img src="/img/plus.svg" alt="" class="card__plus-icon">
+      <svg
+        v-if="isAdded"
+        width="26" height="26" viewBox="0 0 26 26"
+        fill="none" xmlns="http://www.w3.org/2000/svg"
+      >
+        <mask :id="`check-hole-${course.id}`">
+        <rect width="26" height="26" fill="white" />
+        <path
+          d="M6.5 13.5L11 18L19.5 8.5"
+          stroke="black"
+          stroke-width="3"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        />
+        </mask>
+        <circle cx="13" cy="13" r="13" fill="white" :mask="`url(#check-hole-${course.id})`" />
+      </svg>
+      <img v-else src="/img/plus.svg" alt="" class="card__plus-icon">
     </button>
   </article>
 </template>

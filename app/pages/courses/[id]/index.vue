@@ -1,22 +1,89 @@
-<script setup>
-// позже здесь будет загрузка курса из API по id из роута
-// const route = useRoute()
-// const course = useCourse(route.params.id)
+<script setup lang="ts">
+import { getCourseMeta } from "~/data/courseMeta";
 
-const benefits = [
-  "Давно хотели попробовать йогу, но не решались начать",
-  "Хотите укрепить позвоночник, избавиться от болей в спине и суставах",
-  "Ищете активность, полезную для тела и души",
-];
+const route = useRoute();
+const { fetchCourse, addCourse } = useCourses();
+const { user } = useAuth();
 
-const directions = [
-  "Йога для новичков",
-  "Кундалини-йога",
-  "Хатха-йога",
-  "Классическая йога",
-  "Йогатерапия",
-  "Аштанга-йога",
-];
+const courseId = computed(() => route.params.id as string);
+const { data: course, error: courseError, refresh } = await useAsyncData(
+  `course-${courseId.value}`,
+  () => fetchCourse(courseId.value),
+);
+
+watch(courseId, () => refresh());
+
+if (courseError.value) {
+  navigateTo("/");
+}
+
+const isModalOpen = ref(false);
+const isPending = ref(false);
+const isLoading = ref(true);
+const errorText = ref("");
+
+const isAdded = computed(() =>
+  (user.value?.selectedCourses ?? []).includes(courseId.value),
+);
+
+onMounted(async () => {
+  try {
+    course.value = await fetchCourse(courseId.value);
+  } catch {
+    navigateTo("/");
+    return;
+  } finally {
+    isLoading.value = false;
+  }
+});
+
+async function saveCourse() {
+  isPending.value = true;
+  errorText.value = "";
+  try {
+    await addCourse(courseId.value);
+    // синхронизируем стор с сервером
+    if (user.value) {
+      user.value.selectedCourses = [
+        ...(user.value.selectedCourses ?? []),
+        courseId.value,
+      ];
+    }
+  } catch (e) {
+    errorText.value =
+      e instanceof Error ? e.message : "Не удалось добавить курс";
+  } finally {
+    isPending.value = false;
+  }
+}
+
+function onBtnClick() {
+  if (!user.value) {
+    isModalOpen.value = true;
+    return;
+  }
+  saveCourse();
+}
+
+function onModalClose() {
+  isModalOpen.value = false;
+  if (user.value) saveCourse();
+}
+
+const buttonText = computed(() => {
+  if (isAdded.value) return "Курс уже добавлен ✓";
+  if (isPending.value) return "Добавляем…";
+  if (!user.value) return "Войдите, чтобы добавить курс";
+  return "Выбрать курс";
+});
+
+const meta = computed(() => getCourseMeta(course.value?.nameEN ?? ""));
+
+const bannerStyle = computed(() => ({
+  "--banner-img": `url(${meta.value.banner ?? "/img/skillYoga.png"})`,
+  "--banner-img-mobile": `url(${meta.value.bannerMobile ?? meta.value.banner ?? "/img/skillYoga.png"})`,
+  "--banner-bg": meta.value.bg ?? "#ffc700",
+}));
 
 const advantages = [
   "проработка всех групп мышц",
@@ -32,15 +99,15 @@ const advantages = [
     <TheHeader show-subtitle />
 
     <div class="course-page">
-      <section class="course-page__banner">
-        <h1 class="course-page__title">Йога</h1>
+      <section class="course-page__banner" :style="bannerStyle">
+        <h1 class="course-page__title">{{ course?.nameRU ?? "" }}</h1>
       </section>
 
       <section class="course-page__benefits">
         <h2 class="course-page__subtitle">Подойдет для вас, если:</h2>
         <ul class="benefits-list">
           <li
-            v-for="(benefit, index) in benefits"
+            v-for="(benefit, index) in course?.fitting ?? []"
             :key="benefit"
             class="benefits-item"
           >
@@ -54,7 +121,7 @@ const advantages = [
         <h2 class="course-page__subtitle">Направления</h2>
         <div class="directions">
           <p
-            v-for="direction in directions"
+            v-for="direction in course?.directions ?? []"
             :key="direction"
             class="directions__item"
           >
@@ -135,12 +202,12 @@ const advantages = [
             />
           </svg>
         </div>
-        <img 
+        <NuxtImg 
           src="/img/athlete.png" 
           alt="" 
           class="course-page__cta-img" 
-        >
-        <img  
+        />
+        <img
           src="/img/athleteMobyle.png"
           alt=""
           class="course-page__cta-img-mobyle"
@@ -148,15 +215,27 @@ const advantages = [
 
         <section class="course-page__cta">
           <div class="course-page__cta-info">
-            <h2 class="course-page__cta-subtitle">Начните путь к новому телу</h2>
+            <h2 class="course-page__cta-subtitle">
+              Начните путь к новому телу
+            </h2>
             <ul class="course-page__cta-list">
               <li v-for="item in advantages" :key="item">{{ item }}</li>
             </ul>
-            <button class="course-page__btn">Войдите, чтобы добавить курс</button>
+            <button
+              class="course-page__btn"
+              :disabled="isAdded || isPending"
+              @click="onBtnClick"
+            >
+              {{ buttonText }}
+            </button>
+            <p v-if="errorText" class="course-page__cta-error">
+              {{ errorText }}
+            </p>
           </div>
         </section>
       </div>
     </div>
+    <ModalLogin v-if="isModalOpen" @close="onModalClose" />
   </div>
 </template>
 
@@ -169,7 +248,8 @@ const advantages = [
   min-height: 310px;
   padding: 40px;
   border-radius: 30px;
-  background: #ffc700 url("/img/skillYoga.png") no-repeat right center / contain;
+  background: var(--banner-bg, #ffc700) var(--banner-img) no-repeat right
+    center / contain;
 }
 
 .course-page__title {
@@ -375,8 +455,8 @@ const advantages = [
     min-height: auto;
     padding: 0;
     aspect-ratio: 343 / 389;
-    background: #ffc700 url("/img/skillYogaMobyle.png") no-repeat center /
-      contain;
+    background: var(--banner-bg, #ffc700) var(--banner-img-mobile) no-repeat
+      center / cover;
   }
 
   .course-page__title {
