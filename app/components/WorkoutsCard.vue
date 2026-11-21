@@ -27,10 +27,12 @@ async function handleAddCourse() {
   isPending.value = true;
   try {
     await addCourse(props.course.id);
-    user.value.selectedCourses = [
-      ...(user.value.selectedCourses ?? []),
-      props.course.id,
-    ];
+    if (user.value) {
+      user.value.selectedCourses = [
+        ...(user.value.selectedCourses ?? []),
+        props.course.id,
+      ];
+    }
   } catch (e) {
     console.error(e instanceof Error ? e.message : "Ошибка при добавлении курса");
   } finally {
@@ -81,7 +83,7 @@ async function handleAddCourse() {
         width="26" height="26" viewBox="0 0 26 26"
         fill="none" xmlns="http://www.w3.org/2000/svg"
       >
-        <mask id="check-hole">
+        <mask :id="`check-hole-${course.id}`">
         <rect width="26" height="26" fill="white" />
         <path
           d="M6.5 13.5L11 18L19.5 8.5"
@@ -91,7 +93,7 @@ async function handleAddCourse() {
           stroke-linejoin="round"
         />
         </mask>
-        <circle cx="13" cy="13" r="13" fill="white" mask="url(#check-hole)" />
+        <circle cx="13" cy="13" r="13" fill="white" :mask="`url(#check-hole-${course.id})`" />
       </svg>
       <img v-else src="/img/plus.svg" alt="" class="card__plus-icon">
     </button>

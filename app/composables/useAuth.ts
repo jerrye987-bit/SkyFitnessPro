@@ -1,57 +1,62 @@
+import { getAuthToken } from "~/utils/api.ts"; 
+
 type Me = {
     email: string;
     selectedCourses: string[];
   };
 
+const COOKIE_NAME = "fitnessToken";
+const COOKIE_MAX_AGE = 60 * 60 * 24 * 7;
+
+function setTokenCookie(value: string) {
+  document.cookie = `${COOKIE_NAME}=${encodeURIComponent(value)}; max-age=${COOKIE_MAX_AGE}; path=/`;
+}
+
+function clearTokenCookie() {
+  document.cookie = `${COOKIE_NAME}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/`;
+}
+
 export function useAuth() {
   const user = useState<Me | null>("authUser", () => null);
-  const authToken = useState<string | null>("authToken", () => null);
   const isLoggedIn = computed(() => !!user.value);
 
   const saveToken = (value: string) => {
-    authToken.value = value;
-    const token = useCookie<string | null>("fitnessToken", {
-      maxAge: 60 * 60 * 24 * 7,
-    });
-    token.value = value;
+    if (import.meta.client) {
+      setTokenCookie(value);
+    }
   };
 
   const logout = () => {
-    authToken.value = null;
     user.value = null;
-    const token = useCookie<string | null>("fitnessToken");
-    token.value = null;
-
     if (import.meta.client) {
-      document.cookie = "fitnessToken=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/";
+      clearTokenCookie();
+      navigateTo("/");
     }
   };
 
   async function register(email: string, password: string) {
-    await request("/auth/register", { method: "POST", body: { email, password } });
-  }
-
-  async function login(email: string, password: string) {
-    const data = await request("/auth/login", {
+    await request("/auth/register", {
       method: "POST",
       body: { email, password },
     });
-    const t = data?.token ?? data?.user?.token;
-    if (t) saveToken(t);
+  }
+
+  async function login(email: string, password: string) {
+    const data = await request<{ token: string }>("/auth/login", {
+      method: "POST",
+      body: { email, password },
+    });
+    if (data?.token) saveToken(data.token);
     await fetchMe();
     return data;
   }
 
   async function fetchMe(): Promise<Me | undefined> {
-    const authToken = useState<string | null>("authToken");
-    const cookieToken = useCookie<string | null>("fitnessToken");
+    if (!getAuthToken()) return undefined;
 
-    if (!authToken.value && !cookieToken.value) return undefined; // гость — без запроса
-
-    const data = await request("/users/me");
-    const me = (data?.user ?? data) as Me;
-    user.value = me;
-    return me;
+    const data = await request<{ user: Me }>("/users/me");
+    user.value = data.user;
+    return data.user;
   }
 
   return { register, login, fetchMe, logout, saveToken, user, isLoggedIn };

@@ -5,7 +5,7 @@ interface RequestOptions {
   body?: unknown;
 }
 
-function getAuthToken(): string | null {
+export function getAuthToken(): string | null {
   if (import.meta.client) {
     const match = document.cookie.match(/(?:^|;\s*)fitnessToken=([^;]*)/);
     const value = match?.[1];
@@ -14,7 +14,7 @@ function getAuthToken(): string | null {
   return useCookie<string | null>("fitnessToken").value ?? null;
 }
 
-export async function request(path: string, options: RequestOptions = {}) {
+export async function request<T = unknown>(path: string, options: RequestOptions = {}): Promise<T> {
   const stored = useState<string | null>("authToken", () => null).value;
   const token = stored ?? getAuthToken();
 

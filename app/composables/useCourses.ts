@@ -4,34 +4,42 @@ import type {
   WorkoutShort,
   WorkoutFull,
   CourseProgress,
+  WorkoutProgress,
 } from "~/types/course";
 
 export function useCourses() {
+  const { user } = useAuth();
+
   async function fetchCourses(): Promise<CourseShort[]> {
-    return request("/courses");
+    return request<CourseShort[]>("/courses");
   }
 
   async function fetchCourse(courseId: string): Promise<CourseFull> {
-    return request(`/courses/${courseId}`);
+    return request<CourseFull>(`/courses/${courseId}`);
   }
 
   async function addCourse(courseId: string) {
-    return request("/users/me/courses", {
-      method: "POST",
-      body: { courseId },
+    const updated = await request<{ selectedCourses?: string[] }>(
+      "/users/me/courses",
+      { method: "POST", body: { courseId } },
+    );
+    if (user.value && updated?.selectedCourses) {
+      user.value.selectedCourses = updated.selectedCourses;
+    }
+  }
+
+  async function removeCourse(courseId: string): Promise<void> {
+    await request<unknown>(`/users/me/courses/${courseId}`, {
+      method: "DELETE",
     });
   }
 
-  async function removeCourse(courseId: string) {
-    return request(`/users/me/courses/${courseId}`, { method: "DELETE" });
-  }
-
   async function fetchCourseWorkouts(courseId: string): Promise<WorkoutShort[]> {
-    return request(`/courses/${courseId}/workouts`);
+    return request<WorkoutShort[]>(`/courses/${courseId}/workouts`);
   }
 
   async function fetchWorkout(workoutId: string): Promise<WorkoutFull> {
-    return request(`/workouts/${workoutId}`);
+    return request<WorkoutFull>(`/workouts/${workoutId}`);
   }
 
   async function fetchProgress(courseId: string): Promise<CourseProgress>;
@@ -40,18 +48,18 @@ export function useCourses() {
     const query = workoutId
       ? `?courseId=${courseId}&workoutId=${workoutId}`
       : `?courseId=${courseId}`;
-    return request(`/users/me/progress${query}`);
+    return request<CourseProgress | WorkoutProgress>(`/users/me/progress${query}`);
   }
 
   async function saveProgress(courseId: string, workoutId: string, progressData: number[]) {
-    return request(`/courses/${courseId}/workouts/${workoutId}`, {
+    return request<unknown>(`/courses/${courseId}/workouts/${workoutId}`, {
       method: "PATCH",
       body: { progressData },
     });
   }
 
   async function resetWorkoutProgress(courseId: string, workoutId: string) {
-  return request(`/courses/${courseId}/workouts/${workoutId}/reset`, {
+    return request<unknown>(`/courses/${courseId}/workouts/${workoutId}/reset`, {
     method: "PATCH",
   });
 }

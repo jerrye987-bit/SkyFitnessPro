@@ -2,17 +2,33 @@
 import type { CourseCardView } from "~/types/course";
 import { defaultMeta, getCourseMeta } from "~/data/courseMeta";
 import { useCourses } from "~/composables/useCourses";
+import { useAuth } from "~/composables/useAuth";
 
-const { fetchCourses } = useCourses();
+const { fetchCourses, addCourse } = useCourses();
+const { user } = useAuth();
 
-const courses = ref<CourseCardView[]>([]);
-const isLoading = ref(true);
-const errorText = ref("");
 const isLoginModalOpen = ref(false);
 const pendingCourseId = ref<string | null>(null);
 
-const { user } = useAuth();
-const { addCourse } = useCourses();
+const { data: courses, error: coursesError } = await useAsyncData(
+  "courses",
+  async () => {
+    const data = await fetchCourses();
+    return data.map((c) => {
+      const meta = getCourseMeta(c.nameEN);
+      return {
+        ...c,
+        id: c._id,
+        image: meta.image ?? defaultMeta.image,
+        bg: meta.bg ?? defaultMeta.bg,
+        duration: meta.duration ?? defaultMeta.duration,
+        perDay: meta.perDay ?? defaultMeta.perDay,
+        complexity: meta.complexity ?? defaultMeta.complexity,
+      };
+    });
+  },
+  { default: () => [] as CourseCardView[] },
+);
 
 function onNeedAuth(courseId: string) {
   pendingCourseId.value = courseId;
@@ -21,19 +37,6 @@ function onNeedAuth(courseId: string) {
 
 function scrollToTop() {
   window.scrollTo({ top: 0, behavior: "smooth" });
-}
-
-function onLoginModalClose() {
-  isLoginModalOpen.value = false;
-
-  const courseId = pendingCourseId.value;
-  pendingCourseId.value = null;
-
-  if (courseId && user.value) {
-    if (!isCourseAdded(courseId)) {
-      saveCourse(courseId);
-    }
-  }
 }
 
 function isCourseAdded(courseId: string) {
@@ -46,35 +49,27 @@ async function saveCourse(courseId: string) {
 
   try {
     await addCourse(courseId);
-    currentUser.selectedCourses = [...(currentUser.selectedCourses ?? []), courseId];
+    currentUser.selectedCourses = [
+      ...(currentUser.selectedCourses ?? []), 
+      courseId,
+    ];
   } catch (e) {
-    console.error(e instanceof Error ? e.message : "Ошибка при добавлении курса");
+    console.error(
+      e instanceof Error ? e.message : "Ошибка при добавлении курса"
+    );
   }
 }
 
-onMounted(async () => {
-  try {
-    const data = await fetchCourses();
+function onLoginModalClose() {
+  isLoginModalOpen.value = false;
 
-    courses.value = data.map((c) => {
-      const meta = getCourseMeta(c.nameEN);
-      return {
-        ...c,
-        id: c._id,
-        image: meta.image ?? defaultMeta.image,
-        bg: meta.bg ?? defaultMeta.bg,
-        duration: meta.duration ?? defaultMeta.duration,
-        perDay: meta.perDay ?? defaultMeta.perDay,
-        complexity: meta.complexity ?? defaultMeta.complexity,
-      };
-    });
-  } catch (e) {
-    errorText.value =
-      e instanceof Error ? e.message : "Не удалось загрузить курсы";
-  } finally {
-    isLoading.value = false;
+  const courseId = pendingCourseId.value;
+  pendingCourseId.value = null;
+
+  if (courseId && user.value && !isCourseAdded(courseId)) {
+    saveCourse(courseId);
   }
-});
+}
 </script>
 
 
@@ -91,11 +86,8 @@ onMounted(async () => {
       </section>
 
       <section class="workouts container">
-        <template v-if="isLoading">
-          <p>Загружаем курсы…</p>
-        </template>
-        <template v-else-if="errorText">
-          <p class="workouts__error">{{ errorText }}</p>
+        <template v-if="coursesError">
+          <p class="workouts__error">Не удалось загрузить курсы</p>
         </template>
         <WorkoutsCard
           v-for="course in courses"

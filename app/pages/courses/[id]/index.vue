@@ -1,56 +1,52 @@
 <script setup lang="ts">
-import type { CourseFull } from "~/types/course";
 import { getCourseMeta } from "~/data/courseMeta";
 
 const route = useRoute();
 const { fetchCourse, addCourse } = useCourses();
-const { fetchMe, user } = useAuth();
+const { user } = useAuth();
 
-const course = ref<CourseFull | null>(null);
+const courseId = computed(() => route.params.id as string);
+const { data: course, error: courseError, refresh } = await useAsyncData(
+  `course-${courseId.value}`,
+  () => fetchCourse(courseId.value),
+);
+
+watch(courseId, () => refresh());
+
+if (courseError.value) {
+  navigateTo("/");
+}
 
 const isModalOpen = ref(false);
 const isPending = ref(false);
-const isAdded = ref(false);
 const isLoading = ref(true);
-const message = ref("");
 const errorText = ref("");
+
+const isAdded = computed(() =>
+  (user.value?.selectedCourses ?? []).includes(courseId.value),
+);
 
 onMounted(async () => {
   try {
-    course.value = await fetchCourse(route.params.id as string);
+    course.value = await fetchCourse(courseId.value);
   } catch {
     navigateTo("/");
     return;
-  }
-
-  try {
-    if (!user.value) await fetchMe();
-    isAdded.value = (user.value?.selectedCourses ?? []).includes(
-      route.params.id as string,
-    );
-  } catch {
-    // гость — это норма, кнопка покажет «Войдите…»
   } finally {
     isLoading.value = false;
   }
 });
 
 async function saveCourse() {
-  if ((user.value?.selectedCourses ?? []).includes(route.params.id as string)) {
-    isAdded.value = true;
-    return;
-  }
-
   isPending.value = true;
   errorText.value = "";
   try {
-    await addCourse(route.params.id as string);
-    isAdded.value = true;
+    await addCourse(courseId.value);
     // синхронизируем стор с сервером
     if (user.value) {
       user.value.selectedCourses = [
         ...(user.value.selectedCourses ?? []),
-        route.params.id as string,
+        courseId.value,
       ];
     }
   } catch (e) {
@@ -71,7 +67,6 @@ function onBtnClick() {
 
 function onModalClose() {
   isModalOpen.value = false;
-  // если модалку закрыли уже залогиненным — досыпаем курс
   if (user.value) saveCourse();
 }
 
@@ -233,7 +228,6 @@ const advantages = [
             >
               {{ buttonText }}
             </button>
-            <p v-if="message" class="course-page__cta-message">{{ message }}</p>
             <p v-if="errorText" class="course-page__cta-error">
               {{ errorText }}
             </p>

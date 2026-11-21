@@ -10,14 +10,6 @@ const emit = defineEmits<{
 // локальная копия: user вводит сделанные повторения, current — уже сохранённые
 const draft = ref(props.exercises.map((e) => ({ ...e, reps: e.current })));
 
-function onKeydown(event: KeyboardEvent) {
-  if (event.key === "Escape") emit("close");
-}
-
-function onOverlayClick(event: MouseEvent) {
-  if (event.target === event.currentTarget) emit("close");
-}
-
 function submit() {
   const updated = props.exercises.map((e, i) => {
     const reps = Math.max(0, draft.value[i]?.reps ?? 0);
@@ -29,20 +21,19 @@ function submit() {
   emit("save", updated);
 }
 
-onMounted(() => window.addEventListener("keydown", onKeydown));
-onUnmounted(() => window.removeEventListener("keydown", onKeydown));
+useModalEsc(() => emit("close"));
 </script>
 
 <template>
-  <div class="progress-modal" @click="onOverlayClick">
+  <div class="modal-overlay" @click.self="emit('close')">
     <div class="progress-modal__window" role="dialog" aria-modal="true">
       <h2 class="progress-modal__title">Мой прогресс</h2>
 
-      <form class="progress-modal__form" @submit.prevent="submit">
+      <form class="progress-modal__form" novalidate @submit.prevent="submit">
         <div class="progress-modal__list">
           <label
-            v-for="(ex, index) in draft"
-            :key="index"
+            v-for="ex in draft"
+            :key="ex.name"
             class="progress-modal__row"
           >
             <span class="progress-modal__name">
@@ -66,17 +57,6 @@ onUnmounted(() => window.removeEventListener("keydown", onKeydown));
 
 
 <style scoped>
-.progress-modal {
-  position: fixed;
-  inset: 0;
-  z-index: 100;
-  background: rgba(0, 0, 0, 0.2);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 20px;
-}
-
 .progress-modal__window {
   width: 100%;
   max-width: 426px;

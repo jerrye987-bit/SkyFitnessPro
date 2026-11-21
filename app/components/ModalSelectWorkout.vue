@@ -15,19 +15,7 @@ function onStart() {
   }
 }
 
-function onKeydown(event: KeyboardEvent) {
-  if (event.key === "Escape") {
-    emit("close");
-  }
-}
-
-onMounted(() => {
-  window.addEventListener("keydown", onKeydown);
-});
-
-onUnmounted(() => {
-  window.removeEventListener("keydown", onKeydown);
-});
+useModalEsc(() => emit("close"));
 </script>
 
 
@@ -85,15 +73,7 @@ onUnmounted(() => {
 </template>
 
 <style scoped>
-.modal-overlay {
-  position: fixed;
-  inset: 0;
-  z-index: 50;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: rgba(0, 0, 0, 0.4);
-}
+
 
 .select-workout {
   display: flex;
@@ -140,14 +120,6 @@ onUnmounted(() => {
 
 .select-workout__name {
   font-size: 24px;
-  font-weight: 400;
-  line-height: 1.1;
-  color: var(--color-text);
-  font-family: 'Roboto';
-}
-
-.select-workout__subtitle {
-  font-size: 16px;
   font-weight: 400;
   line-height: 1.1;
   color: var(--color-text);
@@ -212,10 +184,6 @@ onUnmounted(() => {
 }
 
 @media (max-width: 767px) {
-  .modal-overlay {
-    padding: 16px;
-  }
-
   .select-workout {
     width: 100%;
     padding: 30px;
@@ -232,10 +200,6 @@ onUnmounted(() => {
 
   .select-workout__name {
     font-size: 18px;
-  }
-
-  .select-workout__subtitle {
-    font-size: 14px;
   }
 
   .select-workout__start {
