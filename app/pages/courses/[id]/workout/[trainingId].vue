@@ -1,93 +1,148 @@
 <script setup lang="ts">
-import { courses } from "~/data/courses";
-import type { Exercise } from "~/data/courses";
+import type { WorkoutFull } from "~/types/course";
+import { useCourses } from "~/composables/useCourses";
 
 const route = useRoute();
-
 const courseId = route.params.id as string;
-const trainingId = route.params.trainingId as string;
+const workoutId = route.params.trainingId as string;
 
-const courseRaw = courses.find((c) => c.id === courseId);
-const trainingRaw = courseRaw?.trainings.find((t) => t.id === trainingId);
+const { fetchWorkout, fetchProgress, saveProgress: saveProgressApi, resetWorkoutProgress } = useCourses();
 
-if (!courseRaw || !trainingRaw) {
-  throw createError({ statusCode: 404, statusMessage: "Тренировка не найдена", fatal: true });
-}
+const workout = ref<WorkoutFull | null>(null);
+const progressData = ref<number[]>([]);
+const isLoading = ref(true);
 
-const course = reactive(courseRaw);
-const training = reactive(trainingRaw);
+const loadError = ref("");
+
+onMounted(async () => {
+  try {
+    workout.value = await fetchWorkout(workoutId);
+    const progress = await fetchProgress(courseId, workoutId).catch(() => null);
+    progressData.value = progress?.progressData ?? [];
+  } catch {
+    loadError.value = "Тренировка не найдена";
+  } finally {
+    isLoading.value = false;
+  }
+});
+
 
 const isProgressOpen = ref(false);
-
-const hasProgress = computed(() =>
-  (training.exercises ?? []).some((e) => (e.reps ?? 0) > 0)
-);
-
 const isSuccessOpen = ref(false);
 
-function saveProgress(updated: Exercise[]) {
-  training.exercises = updated;
-  if (updated.every((e) => e.progress === 100)) {
-    training.done = true;
-  }
-  isProgressOpen.value = false;
-  isSuccessOpen.value = true;
+const hasProgress = computed(() => progressData.value.some((v) => v > 0));
 
-  window.setTimeout(() => {
-    isSuccessOpen.value = false;
-  }, 2000);
+// Процент упражнения = сделанные повторения / плановые
+function exerciseProgress(index: number, quantity: number) {
+  const value = progressData.value[index] ?? 0;
+  return Math.min(100, Math.round((value / (quantity || 1)) * 100));
 }
 
+const modalItems = computed(() =>
+  (workout.value?.exercises ?? []).map((ex, i) => ({
+    name: ex.name,
+    quantity: ex.quantity,
+    current: progressData.value[i] ?? 0,
+  })),
+);
+
+
+const workoutCompleted = computed(() =>
+  progressData.value.length > 0 &&
+  progressData.value.every((v, i) => (workout.value?.exercises[i]?.quantity ?? 1) === v),
+);
+
+const isResetting = ref(false);
+
+async function handleProgressButton() {
+  if (workoutCompleted.value && !isResetting.value) {
+    isResetting.value = true;
+    try {
+      await resetWorkoutProgress(courseId, workoutId);
+      progressData.value = progressData.value.map(() => 0);
+    } catch (e) {
+      console.error(e instanceof Error ? e.message : "Не удалось сбросить прогресс");
+    } finally {
+      isResetting.value = false;
+    }
+    return;
+  }
+  isProgressOpen.value = true;
+}
+
+
+async function saveProgress(updated: { name: string; progress: number }[]) {
+  if (!workout.value) return;
+
+  const merged = workout.value.exercises.map((ex, i) => {
+    const existing = progressData.value[i] ?? 0;
+    const incoming = Math.round(((updated[i]?.progress ?? 0) / 100) * (ex.quantity || 1));
+    return Math.max(existing, incoming);
+  });
+
+  try {
+    await saveProgressApi(courseId, workoutId, merged);
+    progressData.value = merged;
+    isProgressOpen.value = false;
+    isSuccessOpen.value = true;
+    window.setTimeout(() => (isSuccessOpen.value = false), 2000);
+  } catch (e) {
+    console.error(e instanceof Error ? e.message : "Не удалось сохранить прогресс");
+  }
+}
 </script>
+
 
 <template>
     <div>
         <TheHeader />
 
-        <main class="workout">
-            <h1 class="workout__title">{{ course.name }}</h1>
+        <p v-if="loadError" class="workout__error">{{ loadError }}</p>
+
+        <main v-else-if="workout" class="workout">
+            <h1 class="workout__title">{{ workout.name }}</h1>
 
             <div class="workout__video">
             <iframe
-                v-if="training.video"
-                :src="training.video"
-                title="Видео тренировки"
-                allow="clipboard-write; autoplay"
-                allowfullscreen
+              v-if="workout.video"
+              :src="workout.video"
+              title="Видео тренировки"
+              allow="clipboard-write; autoplay"
+              allowfullscreen
             />
             </div>
 
-            <section class="workout__exercises-card">
-            <h2 class="workout__exercises-title">Упражнения тренировки {{ trainingId }}</h2>
+            <section v-if="workout.exercises?.length" class="workout__exercises-card">
+            <h2 class="workout__exercises-title">Упражнения тренировки {{ workout.name }}</h2>
 
-            <div v-if="training.exercises?.length" class="workout__exercises">
-                <div v-for="ex in training.exercises" :key="ex.name" class="exercise">
-                <p class="exercise__name">{{ ex.name }} {{ ex.progress }}%</p>
+            <div class="workout__exercises">
+              <div
+                v-for="(ex, i) in workout.exercises"
+                :key="ex._id"
+                class="exercise"
+              >
+                <p class="exercise__name">{{ ex.name }} {{ exerciseProgress(i, ex.quantity) }}%</p>
                 <div class="exercise__bar">
-                    <div
-                    class="exercise__fill"
-                    :style="{ width: ex.progress + '%' }"
-                    />
+                  <div class="exercise__fill" :style="{ width: exerciseProgress(i, ex.quantity) + '%' }"/>
                 </div>
-                </div>
+              </div>
             </div>
-
-            <p v-else>Для этой тренировки пока нет упражнений</p>
 
             <button 
                 class="workout__submit" 
                 type="button"
-                @click="isProgressOpen = true"
+                :disabled="isResetting"
+                @click="handleProgressButton"
             >
-                {{ hasProgress ? "Обновить свой прогресс" : "Заполнить свой прогресс" }}
+                {{ workoutCompleted ? "Начать заново" : hasProgress ? "Обновить свой прогресс" : "Заполнить свой прогресс" }}
             </button>
             </section>
 
             <ProgressModal
-            v-if="isProgressOpen"
-            :exercises="training.exercises ?? []"
-            @close="isProgressOpen = false"
-            @save="saveProgress"
+              v-if="isProgressOpen"
+              :exercises="modalItems"
+              @close="isProgressOpen = false"
+              @save="saveProgress"
             />
 
             <Transition name="fade">
@@ -103,10 +158,18 @@ function saveProgress(updated: Exercise[]) {
               </div>
             </Transition>
         </main>
+
+        <p v-else-if="isLoading">Загрузка…</p>
     </div>
 </template>
 
 <style scoped>
+.workout__error {
+  padding: 60px 0;
+  font-size: 24px;
+  color: var(--color-text);
+}
+
 .workout__title {
     font-size: 60px;
     font-weight: 500;
