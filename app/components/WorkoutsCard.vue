@@ -18,7 +18,6 @@ const emit = defineEmits<{ needAuth: [courseId: string] }>();
 async function handleAddCourse() {
   if (isPending.value || isAdded.value) return;
 
-  // гость — просим родителя открыть модалку входа
   if (!user.value) {
     emit("needAuth", props.course.id);
     return;
@@ -27,12 +26,6 @@ async function handleAddCourse() {
   isPending.value = true;
   try {
     await addCourse(props.course.id);
-    if (user.value) {
-      user.value.selectedCourses = [
-        ...(user.value.selectedCourses ?? []),
-        props.course.id,
-      ];
-    }
   } catch (e) {
     console.error(e instanceof Error ? e.message : "Ошибка при добавлении курса");
   } finally {

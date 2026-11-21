@@ -10,7 +10,7 @@
     "postinstall": "nuxt prepare",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
-    "test": "vitest run"
+    "test": "vitest run && vitest run --config vitest.nuxt.config.ts"
   },
   "dependencies": {
     "@nuxt/image": "^2.2.1",
@@ -21,6 +21,7 @@
   "devDependencies": {
     "@nuxt/eslint": "^1.17.0",
     "@nuxt/test-utils": "^4.4.0",
+    "@vue/test-utils": "^2.6.0",
     "eslint": "^10.15.0",
     "happy-dom": "^21.0.4",
     "vitest": "^5.1.1",

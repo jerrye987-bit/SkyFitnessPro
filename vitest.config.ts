@@ -14,5 +14,6 @@ export default defineConfig({
   test: {
     environment: "happy-dom",
     include: ["tests/**/*.test.ts"],
+    exclude: ["tests/WorkoutsCard.test.ts"],
   },
 });
