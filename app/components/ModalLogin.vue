@@ -103,7 +103,7 @@ useModalEsc(() => emit("close"));
   <div class="modal-overlay" @click="onOverlayClick">
     <div class="modal__card">
       <div class="modal__logo">
-        <NuxtImg class="modal__logo-img" src="/img/logoAuth.svg" alt="Sky Fitness Pro" width="220" height="35" />
+        <img class="modal__logo-img" src="/img/logoAuth.svg" alt="Sky Fitness Pro" width="220" height="35" >
       </div>
 
       <form 

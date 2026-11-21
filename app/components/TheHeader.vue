@@ -46,7 +46,7 @@ function onLogout() {
           type="button"
           @click="toggleDropdown"
         >
-          <NuxtImg src="/img/avatarIcon.svg" alt="" class="header__user-avatar" />
+          <img src="/img/avatarIcon.svg" alt="" class="header__user-avatar" >
           <span class="header__user-name">{{ user && userName(user) }}</span>
           <svg
             class="header__user-arrow"
