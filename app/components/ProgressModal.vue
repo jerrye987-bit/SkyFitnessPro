@@ -7,7 +7,6 @@ const emit = defineEmits<{
   save: [{ name: string; progress: number }[]];
 }>();
 
-// локальная копия: user вводит сделанные повторения, current — уже сохранённые
 const draft = ref(props.exercises.map((e) => ({ ...e, reps: e.current })));
 
 function submit() {

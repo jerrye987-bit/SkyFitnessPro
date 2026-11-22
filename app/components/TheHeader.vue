@@ -29,48 +29,48 @@ function onLogout() {
       </NuxtLink>
       <p v-if="showSubtitle" class="header__subtitle">Онлайн-тренировки для занятий дома</p>
 
-      <!-- НЕ залогинен: кнопка Войти -->
-      <button
-        v-if="!isLoggedIn" 
-        class="header__btn" 
-        type="button" 
-        @click="isModalOpen = true"
-      >
-        Войти
-      </button>
-
-      <!-- Залогинен: имя + стрелка + дропдаун -->
-      <div v-else class="header__user">
+      <ClientOnly>
         <button
-          class="header__user-btn"
+          v-if="!isLoggedIn"
+          class="header__btn"
           type="button"
-          @click="toggleDropdown"
+          @click="isModalOpen = true"
         >
-          <img src="/img/avatarIcon.svg" alt="" class="header__user-avatar" >
-          <span class="header__user-name">{{ user && userName(user) }}</span>
-          <svg
-            class="header__user-arrow"
-            :class="{ 'header__user-arrow--open': isDropdownOpen }"
-            width="10"
-            height="6"
-            viewBox="0 0 10 6"
-            fill="none"
-          >
-            <path d="M1 1l4 4 4-4" stroke="black" stroke-width="1.5" />
-          </svg>
+          Войти
         </button>
+      
+        <div v-else class="header__user">
+          <button
+            class="header__user-btn"
+            type="button"
+            @click="toggleDropdown"
+          >
+            <img src="/img/avatarIcon.svg" alt="" class="header__user-avatar" >
+            <span class="header__user-name">{{ user && userName(user) }}</span>
+            <svg
+              class="header__user-arrow"
+              :class="{ 'header__user-arrow--open': isDropdownOpen }"
+              width="10"
+              height="6"
+              viewBox="0 0 10 6"
+              fill="none"
+            >
+              <path d="M1 1l4 4 4-4" stroke="black" stroke-width="1.5" />
+            </svg>
+          </button>
 
-        <div v-show="isDropdownOpen" class="header__dropdown">
-          <p class="header__dropdown-name">{{ user && userName(user) }}</p>
-          <p class="header__dropdown-email">{{ user?.email }}</p>
-          <NuxtLink v-slot="{ navigate }" to="/profile" custom >
-            <button class="header__dropdown-profile" type="button" @click="navigate">
-              Мой профиль
-            </button>
-          </NuxtLink>
-          <button class="header__dropdown-logout" type="button" @click="onLogout">Выйти</button>
+          <div v-show="isDropdownOpen" class="header__dropdown">
+            <p class="header__dropdown-name">{{ user && userName(user) }}</p>
+            <p class="header__dropdown-email">{{ user?.email }}</p>
+            <NuxtLink v-slot="{ navigate }" to="/profile" custom >
+              <button class="header__dropdown-profile" type="button" @click="navigate">
+                Мой профиль
+              </button>
+            </NuxtLink>
+            <button class="header__dropdown-logout" type="button" @click="onLogout">Выйти</button>
+          </div>
         </div>
-      </div>
+      </ClientOnly>
 
       <ModalLogin v-if="isModalOpen" @close="isModalOpen = false" />
     </div>

@@ -221,16 +221,20 @@ const advantages = [
             <ul class="course-page__cta-list">
               <li v-for="item in advantages" :key="item">{{ item }}</li>
             </ul>
-            <button
-              class="course-page__btn"
-              :disabled="isAdded || isPending"
-              @click="onBtnClick"
-            >
-              {{ buttonText }}
-            </button>
-            <p v-if="errorText" class="course-page__cta-error">
-              {{ errorText }}
-            </p>
+
+            <ClientOnly>
+              <button
+                class="course-page__btn"
+                :disabled="isAdded || isPending"
+                @click="onBtnClick"
+              >
+                {{ buttonText }}
+              </button>
+
+              <p v-if="errorText" class="course-page__cta-error">
+                {{ errorText }}
+              </p>
+            </ClientOnly>
           </div>
         </section>
       </div>

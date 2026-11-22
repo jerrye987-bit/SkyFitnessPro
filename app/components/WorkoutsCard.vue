@@ -64,32 +64,34 @@ async function handleAddCourse() {
       </div>
     </NuxtLink>
 
-    <button 
-      class="card__plus" 
-      type="button" 
-      :disabled="isAdded || isPending"
-      :aria-label="isAdded ? 'Курс добавлен' : 'Добавить курс'"
-      @click="handleAddCourse"
-      >
-      <svg
-        v-if="isAdded"
-        width="26" height="26" viewBox="0 0 26 26"
-        fill="none" xmlns="http://www.w3.org/2000/svg"
-      >
-        <mask :id="`check-hole-${course.id}`">
-        <rect width="26" height="26" fill="white" />
-        <path
-          d="M6.5 13.5L11 18L19.5 8.5"
-          stroke="black"
-          stroke-width="3"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-        />
-        </mask>
-        <circle cx="13" cy="13" r="13" fill="white" :mask="`url(#check-hole-${course.id})`" />
-      </svg>
-      <img v-else src="/img/plus.svg" alt="" class="card__plus-icon">
-    </button>
+    <ClientOnly>
+      <button 
+        class="card__plus" 
+        type="button" 
+        :disabled="isAdded || isPending"
+        :aria-label="isAdded ? 'Курс добавлен' : 'Добавить курс'"
+        @click="handleAddCourse"
+        >
+        <svg
+          v-if="isAdded"
+          width="26" height="26" viewBox="0 0 26 26"
+          fill="none" xmlns="http://www.w3.org/2000/svg"
+        >
+          <mask :id="`check-hole-${course.id}`">
+          <rect width="26" height="26" fill="white" />
+          <path
+            d="M6.5 13.5L11 18L19.5 8.5"
+            stroke="black"
+            stroke-width="3"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          />
+          </mask>
+          <circle cx="13" cy="13" r="13" fill="white" :mask="`url(#check-hole-${course.id})`" />
+        </svg>
+        <img v-else src="/img/plus.svg" alt="" class="card__plus-icon">
+      </button>
+    </ClientOnly>
   </article>
 </template>
 

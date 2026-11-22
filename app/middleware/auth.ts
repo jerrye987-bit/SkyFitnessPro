@@ -1,7 +1,11 @@
-export default defineNuxtRouteMiddleware(() => {
-  const token = useCookie<string | null>("fitnessToken");
+import { getAuthToken } from "~/utils/api";
 
-  if (!token.value) {
-    return navigateTo("/");
+export default defineNuxtRouteMiddleware(() => {
+  if (import.meta.server) {
+    const token = useCookie<string | null>("fitnessToken");
+    if (!token.value) return navigateTo("/");
+    return;
   }
+
+  if (!getAuthToken()) return navigateTo("/");
 });
