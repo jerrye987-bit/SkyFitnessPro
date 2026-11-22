@@ -4,12 +4,8 @@ export default defineNuxtConfig({
   modules: ["@nuxt/test-utils/module", "@nuxt/eslint", "@nuxt/image"],
   css: ["~/assets/css/main.css"],
   ssr: false,
-  nitro: {
-    prerender: {
-      crawlLinks: true,
-      routes: ["/"],
-      ignore: ["/profile"],
-    },
+  image: {
+    provider: "none",
   },
   app: {
     head: {
