@@ -3,6 +3,11 @@ import { getCourseMeta, defaultMeta } from "~/data/courseMeta";
 import { useCourses } from "~/composables/useCourses";
 import { useAuth } from "~/composables/useAuth";
 
+useHead({
+  title: 'Профиль ',
+})
+
+
 definePageMeta({ middleware: "auth" });
 
 const {

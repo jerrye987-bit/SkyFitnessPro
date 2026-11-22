@@ -6,9 +6,12 @@ const { fetchCourse, addCourse } = useCourses();
 const { user } = useAuth();
 
 const courseId = computed(() => route.params.id as string);
-const { data: course, error: courseError, refresh } = await useAsyncData(
-  `course-${courseId.value}`,
-  () => fetchCourse(courseId.value),
+const {
+  data: course,
+  error: courseError,
+  refresh,
+} = await useAsyncData(`course-${courseId.value}`, () =>
+  fetchCourse(courseId.value),
 );
 
 watch(courseId, () => refresh());
@@ -78,6 +81,10 @@ const buttonText = computed(() => {
 });
 
 const meta = computed(() => getCourseMeta(course.value?.nameEN ?? ""));
+
+useHead({
+  title: () => course.value?.nameRU || "Курс",
+});
 
 const bannerStyle = computed(() => ({
   "--banner-img": `url(${meta.value.banner ?? "/img/skillYoga.png"})`,
@@ -202,11 +209,7 @@ const advantages = [
             />
           </svg>
         </div>
-        <NuxtImg 
-          src="/img/athlete.png" 
-          alt="" 
-          class="course-page__cta-img" 
-        />
+        <NuxtImg src="/img/athlete.png" alt="" class="course-page__cta-img" />
         <img
           src="/img/athleteMobyle.png"
           alt=""

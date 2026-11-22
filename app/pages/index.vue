@@ -4,6 +4,11 @@ import { defaultMeta, getCourseMeta, sortCoursesByMock } from "~/data/courseMeta
 import { useCourses } from "~/composables/useCourses";
 import { useAuth } from "~/composables/useAuth";
 
+useHead({
+  title: 'Онлайн-тренировки для занятий дома ',
+})
+
+
 const { fetchCourses, addCourse } = useCourses();
 const { user } = useAuth();
 

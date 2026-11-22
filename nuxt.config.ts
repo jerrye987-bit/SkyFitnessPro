@@ -9,6 +9,8 @@ export default defineNuxtConfig({
   },
   app: {
     head: {
+      titleTemplate: '%s — Skillfit',
+      title: 'Онлайн-тренировки для занятий дома',
       link: [
         { rel: "preconnect", href: "https://fonts.googleapis.com" },
         {
