@@ -113,18 +113,12 @@ useModalEsc(() => emit("close"));
       >
         <div class="modal__group-input">
           <input
-            class="modal__username"
-            type="text"
-            name="username"
-            autocomplete="username"
-          >
-          <input
             ref="emailInput"
             v-model="email"
             class="modal__input"
             type="email"
             placeholder="Эл. почта"
-            autocomplete="email"
+            autocomplete="username"
             name="email"
           >
           <input
@@ -185,18 +179,6 @@ useModalEsc(() => emit("close"));
   display: flex;
   flex-direction: column;
   gap: 34px;
-}
-
-.modal__username {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -1px;
-  overflow: hidden;
-  clip: rect(0 0 0 0);
-  white-space: nowrap;
-  border: 0;
 }
 
 .modal__group-input {
