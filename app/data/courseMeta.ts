@@ -74,7 +74,6 @@ export const defaultMeta: Required<CourseMeta> = {
   complexity: 0,
 };
 
-// data/courseMeta.ts или рядом
 export const COURSE_ORDER = [
   "Yoga",
   "Stretching",
@@ -103,4 +102,14 @@ function normalizeKey(key: string): string {
 
 export function getCourseMeta(nameEN: string): CourseMeta {
   return courseMeta[normalizeKey(nameEN)] ?? {};
+}
+
+const COMPLEXITY_LABELS: Record<number, string> = {
+  1: "Лёгкий",
+  2: "Средний",
+  3: "Сложный",
+};
+
+export function getComplexityLabel(complexity: number): string {
+  return COMPLEXITY_LABELS[complexity] ?? "";
 }

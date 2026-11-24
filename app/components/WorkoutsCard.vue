@@ -2,6 +2,8 @@
 import type { CourseCardView } from "~/types/course";
 import { useCourses } from "~/composables/useCourses";
 import { useAuth } from "~/composables/useAuth";
+import { getComplexityLabel } from "~/data/courseMeta";
+
 
 const props = defineProps<{ course: CourseCardView }>();
 const { addCourse } = useCourses();
@@ -58,7 +60,7 @@ async function handleAddCourse() {
           </li>
           <li class="card__tag">
             <img src="/img/complexity.svg" alt="" class="card__tag-icon">
-            {{ course.complexity }}
+            {{ getComplexityLabel(course.complexity) || course.complexity }}
           </li>
         </ul>
       </div>
