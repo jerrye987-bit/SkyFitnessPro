@@ -45,13 +45,6 @@ async function saveCourse() {
   errorText.value = "";
   try {
     await addCourse(courseId.value);
-    // синхронизируем стор с сервером
-    if (user.value) {
-      user.value.selectedCourses = [
-        ...(user.value.selectedCourses ?? []),
-        courseId.value,
-      ];
-    }
   } catch (e) {
     errorText.value =
       e instanceof Error ? e.message : "Не удалось добавить курс";
@@ -59,6 +52,7 @@ async function saveCourse() {
     isPending.value = false;
   }
 }
+
 
 function onBtnClick() {
   if (!user.value) {

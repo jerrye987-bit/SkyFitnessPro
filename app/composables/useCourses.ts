@@ -31,7 +31,7 @@ export function useCourses() {
       const next =
         Array.isArray(updated?.selectedCourses) && updated.selectedCourses.length
           ? updated.selectedCourses
-          : [...(user.value.selectedCourses ?? []), courseId];
+          : [...new Set([...(user.value.selectedCourses ?? []), courseId])];
       user.value.selectedCourses = next;
     }
   }
