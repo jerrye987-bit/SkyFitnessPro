@@ -33,13 +33,14 @@ describe("useCourses", () => {
     expect(userRef.value?.selectedCourses).toEqual(["1", "2"]);
   });
 
-  it("addCourse не трогает пользователя, если сервер не вернул список", async () => {
+  it("addCourse при ответе без списка добавляет курс локально без дубликатов", async () => {
+    userRef.value = { selectedCourses: ["2"] };
     vi.mocked(request).mockResolvedValue({});
 
     const { addCourse } = useCourses();
     await addCourse("2");
 
-    expect(userRef.value?.selectedCourses).toEqual([]);
+    expect(userRef.value?.selectedCourses).toEqual(["2"]);
   });
 
   it("addCourse не глотает ошибку сервера", async () => {
