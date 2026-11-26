@@ -26,8 +26,13 @@ export function useCourses() {
       "/users/me/courses",
       { method: "POST", body: { courseId } },
     );
-    if (user.value && updated?.selectedCourses) {
-      user.value.selectedCourses = updated.selectedCourses;
+
+    if (user.value) {
+      const next =
+        Array.isArray(updated?.selectedCourses) && updated.selectedCourses.length
+          ? updated.selectedCourses
+          : [...new Set([...(user.value.selectedCourses ?? []), courseId])];
+      user.value.selectedCourses = next;
     }
   }
 

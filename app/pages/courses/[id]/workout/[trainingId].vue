@@ -90,6 +90,25 @@ async function saveProgress(updated: { name: string; progress: number }[]) {
     console.error(e instanceof Error ? e.message : "Не удалось сохранить прогресс");
   }
 }
+
+const isCompleting = ref(false);
+
+async function completeEmptyWorkout() {
+  if (isCompleting.value || !workout.value) return;
+
+  isCompleting.value = true;
+  try {
+    await saveProgressApi(courseId, workoutId, []);
+    progressData.value = [];
+    isSuccessOpen.value = true;
+    window.setTimeout(() => (isSuccessOpen.value = false), 2000);
+  } catch (e) {
+    console.error(e instanceof Error ? e.message : "Не удалось сохранить прогресс");
+  } finally {
+    isCompleting.value = false;
+  }
+}
+
 </script>
 
 
@@ -111,6 +130,18 @@ async function saveProgress(updated: { name: string; progress: number }[]) {
               allowfullscreen
             />
             </div>
+
+            <section v-if="workout.exercises?.length === 0" class="workout__complete">
+              <button
+                class="workout__submit"
+                type="button"
+                :disabled="isCompleting"
+                @click="completeEmptyWorkout"
+              >
+                Завершить тренировку
+              </button>
+            </section>
+
 
             <section v-if="workout.exercises?.length" class="workout__exercises-card">
             <h2 class="workout__exercises-title">Упражнения тренировки {{ workout.name }}</h2>
@@ -246,6 +277,12 @@ async function saveProgress(updated: { name: string; progress: number }[]) {
     line-height: 1.1;
 }
 
+.workout__complete {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 100px;
+}
+
 .success {
   position: fixed;
   inset: 0;
@@ -317,5 +354,10 @@ async function saveProgress(updated: { name: string; progress: number }[]) {
   .workout__submit {
     width: 100%;
   }
+
+    .workout__complete {
+    margin-bottom: 40px;
+  }
+
 }
 </style>

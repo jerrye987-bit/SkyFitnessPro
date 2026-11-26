@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { getCourseMeta, defaultMeta } from "~/data/courseMeta";
+import { getCourseMeta, defaultMeta, getComplexityLabel } from "~/data/courseMeta";
 import { useCourses } from "~/composables/useCourses";
 import { useAuth } from "~/composables/useAuth";
 
@@ -124,6 +124,10 @@ async function removeCourse(course: MyCourse) {
     console.error(e instanceof Error ? e.message : "Не удалось удалить курс");
   }
 }
+
+function complexityLabel(complexity: number) {
+  return getComplexityLabel(complexity);
+}
 </script>
 
 <template>
@@ -200,17 +204,22 @@ async function removeCourse(course: MyCourse) {
                 </li>
                 <li class="course-card__pill">
                   <img src="/img/complexity.svg" alt="" >
-                  Сложность
-                  <span class="course-card__dots">
-                    <span
-                      v-for="i in 5"
-                      :key="i"
-                      class="course-card__dot"
-                      :class="{
-                        'course-card__dot--active': i <= course.complexity,
-                      }"
-                    />
-                  </span>
+                  <template v-if="complexityLabel(course.complexity)">
+                    {{ complexityLabel(course.complexity) }}
+                  </template>
+                  <template v-else>
+                    Сложность
+                    <span class="course-card__dots">
+                      <span
+                        v-for="i in 5"
+                        :key="i"
+                        class="course-card__dot"
+                        :class="{
+                          'course-card__dot--active': i <= course.complexity,
+                        }"
+                      />
+                    </span>
+                  </template>
                 </li>
               </ul>
 
